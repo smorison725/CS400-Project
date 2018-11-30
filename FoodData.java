@@ -1,5 +1,10 @@
+package application;
+
 import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
+import java.io.File;
+import java.util.ArrayList;
 
 /**
  * This class represents the backend for managing all 
@@ -20,9 +25,31 @@ public class FoodData implements FoodDataADT<FoodItem> {
      * Public constructor
      */
     public FoodData() {
-        // TODO : Complete
+        foodItemList = new ArrayList<>();
+        indexes = new HashMap<>();
     }
     
+    /**
+     * Creates a new food item from a given set of data about that food item
+     * 
+     * @param id- the id of the new food item
+     * @param name- the name of the new food item
+     * @param calories- the number of calories in the food item
+     * @param fat- the number of fat grams in the food item
+     * @param carbs- the number of carbohydrate grams in the food item
+     * @param fiber- the number of fiber grams in the food item
+     * @param protein- the number of protein grams in the food item
+     * @return a food item object
+     */
+	private static FoodItem createFoodItem (String id, String name, double calories, double fat, double carbs, double fiber, double protein) {
+		FoodItem food = new FoodItem(id, name);
+		food.addNutrient(Nutrients.CALORIES.toString(), calories);
+		food.addNutrient(Nutrients.FAT.toString(), fat);
+		food.addNutrient(Nutrients.CARBOHYDRATES.toString(), carbs);
+		food.addNutrient(Nutrients.FIBER.toString(), fiber);
+		food.addNutrient(Nutrients.PROTEIN.toString(), protein);
+		return food;
+	}    
     
     /*
      * (non-Javadoc)
@@ -30,7 +57,32 @@ public class FoodData implements FoodDataADT<FoodItem> {
      */
     @Override
     public void loadFoodItems(String filePath) {
-        // TODO : Complete
+        try {
+        	Scanner fileScanner = new Scanner(new File(filePath));
+        	String line;
+        	while (fileScanner.hasNextLine()) {
+        		line = fileScanner.nextLine();
+        		String[] foodItemData = line.split(",");
+        		String id = foodItemData[0];
+        		String name = foodItemData[1];
+        		if ((id == null || id.equals("")) || (name == null || name.equals(""))) {
+        			continue;
+        		}
+        		try {
+        			Double calories = Double.parseDouble(foodItemData[3]);
+					Double fat = Double.parseDouble(foodItemData[5]);
+					Double carbs = Double.parseDouble(foodItemData[7]);
+					Double fiber = Double.parseDouble(foodItemData[9]);
+					Double protein = Double.parseDouble(foodItemData[11]);
+					FoodItem newFood = createFoodItem(id, name, calories, fat, carbs, fiber, protein);
+					addFoodItem(newFood);
+        		} catch (NumberFormatException ne){
+        			continue;
+        		}
+        	}
+        } catch (Exception e) {
+        	System.out.println(e.getMessage());
+        }
     }
 
     /*
@@ -39,8 +91,8 @@ public class FoodData implements FoodDataADT<FoodItem> {
      */
     @Override
     public List<FoodItem> filterByName(String substring) {
-        // TODO : Complete
-        return null;
+        NameFilter nf = new NameFilter(substring);
+        return nf.executeFilter(foodItemList);
     }
 
     /*

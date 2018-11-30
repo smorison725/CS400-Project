@@ -1,5 +1,6 @@
 package application;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,7 +19,7 @@ public class NameFilter {
 	 * @param name the name we want to filter on
 	 */
 	public NameFilter(String name) {
-		nameToCompare = name;
+		nameToCompare = name.toLowerCase();
 	}
 	
 	/**
@@ -45,7 +46,13 @@ public class NameFilter {
 	 * @param tree tree of values with the name as keys and the FoodItem as values
 	 * @return List of all FoodItems with this name
 	 */
-	public List<FoodItem> executeFilter(BPTree<String, FoodItem> tree) {
-		return tree.rangeSearch(nameToCompare, "==");
+	public List<FoodItem> executeFilter(List<FoodItem> allFoodsList) {
+		ArrayList<FoodItem> targetFoods = new ArrayList<>();
+		for (FoodItem f : allFoodsList) {
+			if (f.getName().toLowerCase().contains(nameToCompare)) {
+				targetFoods.add(f);
+			}
+		}
+		return targetFoods;
 	}
 }
