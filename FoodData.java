@@ -1,8 +1,12 @@
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
+import java.util.TreeSet;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.io.IOException;
 
 /**
  * This class represents the backend for managing all 
@@ -25,6 +29,9 @@ public class FoodData implements FoodDataADT<FoodItem> {
     public FoodData() {
         foodItemList = new ArrayList<>();
         indexes = new HashMap<>();
+        for (Nutrients n : Nutrients.values()) {
+          indexes.put(n.toString(), new BPTree<>(5));
+        }
     }
     
     /**
@@ -89,8 +96,8 @@ public class FoodData implements FoodDataADT<FoodItem> {
      */
     @Override
     public List<FoodItem> filterByName(String substring) {
-        NameFilter nf = new NameFilter(substring);
-        return nf.executeFilter(foodItemList);
+        NameFilter nmFilt = new NameFilter(substring);
+        return nmFilt.executeFilter(foodItemList);
     }
 
     /*
@@ -99,8 +106,31 @@ public class FoodData implements FoodDataADT<FoodItem> {
      */
     @Override
     public List<FoodItem> filterByNutrients(List<String> rules) {
-        // TODO : Complete
-        return null;
+        List<FoodItem> resultList = new ArrayList<>();
+        for (String r : rules) {
+          String[] pieces = r.split(" ");
+          if (pieces.length != 3) {
+            continue;
+          }
+          try {
+            NutrientFilter nutFilt = new NutrientFilter(pieces[0], pieces[1], 
+                Double.parseDouble(pieces[2]));
+            List<FoodItem> tempList = new ArrayList<>();
+            tempList = nutFilt.executeFilter(indexes.get(pieces[0]));
+            if (resultList.size() == 0) {
+              resultList.addAll(tempList);
+            } else {
+              for (FoodItem f : resultList) {
+                if (!tempList.contains(f)) {
+                  resultList.remove(f);
+                }
+              }
+            }
+          } catch (NumberFormatException e) {
+            continue;
+          }          
+        }
+        return resultList;
     }
 
     /*
@@ -109,7 +139,10 @@ public class FoodData implements FoodDataADT<FoodItem> {
      */
     @Override
     public void addFoodItem(FoodItem foodItem) {
-        // TODO : Complete
+        foodItemList.add(foodItem);
+        for (Nutrients n : Nutrients.values()) {
+          indexes.get(n.toString()).insert(foodItem.getNutrientValue(n.toString()), foodItem);
+        }
     }
 
     /*
@@ -118,15 +151,30 @@ public class FoodData implements FoodDataADT<FoodItem> {
      */
     @Override
     public List<FoodItem> getAllFoodItems() {
-        // TODO : Complete
-        return null;
+        return foodItemList;
     }
 
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * @see FoodDataADT#saveFoodItems(java.lang.String)
+	 */
+    @Override
 	public void saveFoodItems(String filename) {
-		// TODO Auto-generated method stub
-		
+		try {
+		  FileWriter fw = new FileWriter(new File(filename));
+		  PrintWriter pw = new PrintWriter(fw);
+		  TreeSet<FoodItem> foodSet = new TreeSet<>();
+		  foodSet.addAll(foodItemList);
+		  for (FoodItem f : foodSet) {
+		    pw.println(f.getID()+","+f.getName()+",calories,"+f.getNutrientValue("CALORIES")+",fat"
+		        +f.getNutrientValue("FAT")+",carbohydrate,"+f.getNutrientValue("CARBOHYDRATES")
+		        +",fiber,"+f.getNutrientValue("FIBER")+",protein,"+f.getNutrientValue("PROTEIN"));
+		  }
+		} catch (IOException ioe) {
+		  System.out.println(ioe.getMessage());
+		} catch (Exception e) {
+		  System.out.println(e.getMessage());
+		}
 	}
-
 }

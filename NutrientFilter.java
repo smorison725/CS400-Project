@@ -1,30 +1,30 @@
 import java.util.List;
 
 /**
- * This class defines a rule used to filter out FoodItems that meet a criterion related to one of 
- * the nutrients in the food
+ * This class defines a rule used to filter out FoodItems that meet criteria related to the
+ * nutrients in the food
  * 
  * @author Shannon Morison, Grant Perry, Kevin Boening, Billy Kirk
  *
  */
 public class NutrientFilter {
 	// Nutrient to be filtered on
-	private Nutrients nutrientToCompare;
+	private String nutrientName;
 	// Comparator for the filter
-	private Operators operator;
+	private String comparator;
 	// value to be compared against
 	private double value;
 	
 	/**
 	 * Constructor for NutrientFilter
 	 * 
-	 * @param nut Nutrients element to filter on
-	 * @param o Operators element indicating what comparison to do
+	 * @param nut nutrient to filter on
+	 * @param c Comparator to use, either <=, >=, or ==
 	 * @param val value to compare based off of
 	 */
-	public NutrientFilter(Nutrients nut, Operators o, double val) {
-		nutrientToCompare = nut;
-		operator = o;
+	public NutrientFilter(String nut, String c, double val) {
+		nutrientName = nut;
+		comparator = c;
 		value = val;
 	}
 	
@@ -33,17 +33,17 @@ public class NutrientFilter {
 	 * 
 	 * @return nutrientToCompare
 	 */
-	public Nutrients getNutrient() {
-		return nutrientToCompare;
+	public String getNutrient() {
+		return nutrientName;
 	}
 	
 	/**
-	 * Accessor for operator
+	 * Accessor for comparator
 	 * 
-	 * @return operator
+	 * @return comparator
 	 */
-	public Operators getOperator() {
-		return operator;
+	public String getComparator() {
+		return comparator;
 	}
 	
 	/**
@@ -56,21 +56,21 @@ public class NutrientFilter {
 	}
 	
 	/**
-	 * Mutator for nutrientToCompare
+	 * Mutator for nutrientName
 	 * 
-	 * @param nut new value for nutrientToCompare
+	 * @param nut new value for nutrientName
 	 */
-	public void setNutrient(Nutrients nut) {
-		nutrientToCompare = nut;
+	public void setNutrient(String nut) {
+		nutrientName = nut;
 	}
 	
 	/**
-	 * Mutator for operator
+	 * Mutator for comparator
 	 * 
-	 * @param op new operator value
+	 * @param comp new comparator value
 	 */
-	public void setOperator(Operators op) {
-		operator = op;
+	public void setComparator(String comp) {
+		comparator = comp;
 	}
 	
 	/**
@@ -80,14 +80,6 @@ public class NutrientFilter {
 	 * @return a List containing all the FoodItems that meet this filter's criterion
 	 */
 	public List<FoodItem> executeFilter(BPTree<Double, FoodItem> tree) {
-		String comparator = "";
-		if (operator == Operators.values()[0]) {
-			comparator = ">=";
-		} else if (operator == Operators.values()[1]) {
-			comparator = "<=";
-		} else if (operator == Operators.values()[2]) {
-			comparator = "==";
-		}
 		return tree.rangeSearch(value, comparator);
 	}
 }
