@@ -17,7 +17,7 @@ import java.io.IOException;
 public class FoodData implements FoodDataADT<FoodItem> {
     
     // List of all the food items.
-    private List<FoodItem> foodItemList;
+    private TreeSet<FoodItem> foodItemList;
 
     // Map of nutrients and their corresponding index
     private HashMap<String, BPTree<Double, FoodItem>> indexes;
@@ -27,7 +27,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
      * Public constructor
      */
     public FoodData() {
-        foodItemList = new ArrayList<>();
+        foodItemList = new TreeSet<>();
         indexes = new HashMap<>();
         for (Nutrients n : Nutrients.values()) {
           indexes.put(n.toString(), new BPTree<>(5));
@@ -46,7 +46,8 @@ public class FoodData implements FoodDataADT<FoodItem> {
      * @param protein- the number of protein grams in the food item
      * @return a food item object
      */
-	private static FoodItem createFoodItem (String id, String name, double calories, double fat, double carbs, double fiber, double protein) {
+	private static FoodItem createFoodItem (String id, String name, double calories, double fat, 
+	    double carbs, double fiber, double protein) {
 		FoodItem food = new FoodItem(id, name);
 		food.addNutrient(Nutrients.CALORIES.toString(), calories);
 		food.addNutrient(Nutrients.FAT.toString(), fat);
@@ -62,18 +63,32 @@ public class FoodData implements FoodDataADT<FoodItem> {
      */
     @Override
     public void loadFoodItems(String filePath) {
-        try {
+      foodItemList = new TreeSet<>();
+      for (Nutrients n : Nutrients.values()) {
+        indexes.put(n.toString(), new BPTree<>(5));
+      }
+      try {
         	Scanner fileScanner = new Scanner(new File(filePath));
         	String line;
         	while (fileScanner.hasNextLine()) {
         		line = fileScanner.nextLine();
         		String[] foodItemData = line.split(",");
+        		
+        		// if input line does not contain 12 pieces, skip this line
+        		if (foodItemData.length != 12) {
+        		  continue;
+        		}
+        		
+        		// grab id and name for FoodItem
         		String id = foodItemData[0];
         		String name = foodItemData[1];
-        		if ((id == null || id.equals("")) || (name == null || name.equals(""))) {
+        		
+        		// if id or name is blank, skip
+        		if (id.equals("") || name.equals("")) {
         			continue;
         		}
         		try {
+        		    // parse nutrient information and add FoodItem to the foodItemList
         			Double calories = Double.parseDouble(foodItemData[3]);
 					Double fat = Double.parseDouble(foodItemData[5]);
 					Double carbs = Double.parseDouble(foodItemData[7]);
@@ -83,6 +98,9 @@ public class FoodData implements FoodDataADT<FoodItem> {
 					addFoodItem(newFood);
         		} catch (NumberFormatException ne){
         			continue;
+        		} finally {
+        		  // free resources
+        		  fileScanner.close();
         		}
         	}
         } catch (Exception e) {
@@ -97,7 +115,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
     @Override
     public List<FoodItem> filterByName(String substring) {
         NameFilter nmFilt = new NameFilter(substring);
-        return nmFilt.executeFilter(foodItemList);
+        return nmFilt.executeFilter(new ArrayList<>(foodItemList));
     }
 
     /*
@@ -110,24 +128,30 @@ public class FoodData implements FoodDataADT<FoodItem> {
         for (String r : rules) {
           String[] pieces = r.split(" ");
           if (pieces.length != 3) {
-            continue;
+            continue; // ignore invalid rule input, just continue to the next one
           }
           try {
             NutrientFilter nutFilt = new NutrientFilter(pieces[0], pieces[1], 
-                Double.parseDouble(pieces[2]));
+                Double.parseDouble(pieces[2])); // create a filter based on the current rule
             List<FoodItem> tempList = new ArrayList<>();
-            tempList = nutFilt.executeFilter(indexes.get(pieces[0]));
-            if (resultList.size() == 0) {
+            
+            // execute the current filter, store in temporary list
+            tempList = nutFilt.executeFilter(indexes.get(pieces[0])); 
+            
+            // for the first rule, just add all the matching food
+            if (resultList.size() == 0) { 
               resultList.addAll(tempList);
             } else {
               for (FoodItem f : resultList) {
-                if (!tempList.contains(f)) {
+                
+                // remove every food in resultList that is not in tempList
+                if (!tempList.contains(f)) {                           
                   resultList.remove(f);
                 }
               }
             }
           } catch (NumberFormatException e) {
-            continue;
+            continue; // if we can't parse the input rule, skip it
           }          
         }
         return resultList;
@@ -151,7 +175,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
      */
     @Override
     public List<FoodItem> getAllFoodItems() {
-        return foodItemList;
+        return new ArrayList<>(foodItemList);
     }
 
 
@@ -161,16 +185,23 @@ public class FoodData implements FoodDataADT<FoodItem> {
 	 */
     @Override
 	public void saveFoodItems(String filename) {
-		try {
+        try {
 		  FileWriter fw = new FileWriter(new File(filename));
 		  PrintWriter pw = new PrintWriter(fw);
-		  TreeSet<FoodItem> foodSet = new TreeSet<>();
-		  foodSet.addAll(foodItemList);
-		  for (FoodItem f : foodSet) {
+		  
+		  // construct TreeSet of the contents of foodItemList
+		  TreeSet<FoodItem> foodSet = new TreeSet<>(foodItemList); 
+		  
+		  for (FoodItem f : foodSet) { // write out one line for each FoodItem
 		    pw.println(f.getID()+","+f.getName()+",calories,"+f.getNutrientValue("CALORIES")+",fat"
 		        +f.getNutrientValue("FAT")+",carbohydrate,"+f.getNutrientValue("CARBOHYDRATES")
 		        +",fiber,"+f.getNutrientValue("FIBER")+",protein,"+f.getNutrientValue("PROTEIN"));
 		  }
+		  
+		  // close file resources
+		  pw.close();
+		  fw.close();
+		  
 		} catch (IOException ioe) {
 		  System.out.println(ioe.getMessage());
 		} catch (Exception e) {
