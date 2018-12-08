@@ -67,8 +67,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
       for (Nutrients n : Nutrients.values()) {
         indexes.put(n.toString(), new BPTree<>(5));
       }
-      try {
-        	Scanner fileScanner = new Scanner(new File(filePath));
+      try (Scanner fileScanner = new Scanner(new File(filePath))){
         	String line;
         	while (fileScanner.hasNextLine()) {
         		line = fileScanner.nextLine();
@@ -98,14 +97,11 @@ public class FoodData implements FoodDataADT<FoodItem> {
 					addFoodItem(newFood);
         		} catch (NumberFormatException ne){
         			continue;
-        		} finally {
-        		  // free resources
-        		  fileScanner.close();
-        		}
+        		} 
         	}
         } catch (Exception e) {
         	System.out.println(e.getMessage());
-        }
+        } 
     }
 
     /*
@@ -206,6 +202,16 @@ public class FoodData implements FoodDataADT<FoodItem> {
 		  System.out.println(ioe.getMessage());
 		} catch (Exception e) {
 		  System.out.println(e.getMessage());
+		}
+	}
+	public static void main(String[] args) {
+		//read a data file
+		//call other methods
+		//instantiate an ADT
+		FoodData testFoods = new FoodData();
+		testFoods.loadFoodItems("foodItems.txt");
+		for (FoodItem food : testFoods.getAllFoodItems()) {
+			System.out.println(food.getName());
 		}
 	}
 }

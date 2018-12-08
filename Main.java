@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -47,21 +49,21 @@ import javafx.scene.control.TextField;
  * @author Shannon Morison, Grant Perry, Kevin Boening, Billy Kirk
  */
 public class Main extends Application {
-	public static TreeSet<FoodItem> foodList; //Stores the complete list of food items
 	private static ListView<String> foodListView; //Stores the food list that we're viewing
 	
 /**
  * Constructor for the Main class. It doesn't take any parameters but it does initialize the food list
  */
 	public Main () {
-		foodList = new TreeSet<FoodItem>();
 	}
 	
 	@Override
 	public void start(Stage primaryStage) {
 		try {
-			foodList = new TreeSet<FoodItem>(); //Instantiate the foodList
-			parseFoodList("foodItems.txt");
+			FoodData currFoods = new FoodData(); //Instantiate a new instance of FoodData
+			currFoods.loadFoodItems("foodItems.txt"); //Load all the food items in the default path into our FoodData elements
+			List<FoodItem> filteredFoods = new ArrayList<FoodItem>(); //Make a new array list to store the filtered foods and set it to the full list of foods to begin with
+			filteredFoods = currFoods.getAllFoodItems();
 			//Scene will consist of a split pane with a left and right pane
 	        SplitPane root = new SplitPane();
 	        VBox left = new VBox();
@@ -105,11 +107,9 @@ public class Main extends Application {
 	        addFilt.add(tf3, 2, 0);
 	        addFilt.add(addFilter, 3, 0);
 	        
+	        
 	        //Section for currently applied filters
-	        HBox currentFilts = new HBox();
-	        Label lbl1 = new Label("Calories");
-	        Label lbl2 = new Label(">=");
-	        Label lbl3 = new Label("50");
+	        List<HBox> appliedFilters = new ArrayList<HBox>(); //Create a  list to store all the filters
 	        Label currFilt = new Label("Current filters");
 	        currFilt.getStyleClass().add("custom-subheader");
 	        Button removeFilt = new Button("Remove filters \u2613");
@@ -129,13 +129,38 @@ public class Main extends Application {
 	        HBox.setHgrow(region4, Priority.ALWAYS);
 	        HBox foodsTitleHBox = new HBox();
 	        foodsTitleHBox.getChildren().addAll(region3, foodsLabel, region4);
-	        currentFilts.getChildren().addAll(lbl1, lbl2, lbl3);
-	        currentFilts.setSpacing(10.0);
 	        
 	        //Add all of these into the filter VBox
 	        VBox filterVBox = new VBox();
-	        filterVBox.getChildren().addAll(addFilt, filters, currentFilts, removeFilt);
+	        filterVBox.getChildren().addAll(addFilt, filters);
+	        filterVBox.getChildren().addAll(appliedFilters);
+	        filterVBox.getChildren().addAll(removeFilt);
 	        filterVBox.setSpacing(7.5);
+	        
+		      //Apply Filter action event that occurs when the Apply Filter button is pressed
+	        EventHandler<ActionEvent> applyFilter = new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent e) {
+	        		String filterName = (String)type.getValue(); //Get the values place in the filter field and add them all to the current filters
+	        		String operatorName = (String)operator.getValue();
+	        		String valueName = tf3.getText();
+	    	        Label lbl1 = new Label(filterName);
+	    	        Label lbl2 = new Label(operatorName);
+	    	        Label lbl3 = new Label(valueName);
+	    	        HBox currFilter = new HBox();
+	    	        currFilter.getChildren().addAll(lbl1, lbl2, lbl3);
+	    	        currFilter.setSpacing(10.0);
+	    	        appliedFilters.add(currFilter);
+	    	        type.valueProperty().set(null); //Clear out the fields to prepare them for new values 
+	    	        operator.valueProperty().set(null);
+	    	        tf3.clear();
+	    	        filterVBox.getChildren().clear();
+	    	        filterVBox.getChildren().addAll(addFilt, filters); //Add all the labels back to the filter section so it appear appropriately
+	    	        filterVBox.getChildren().addAll(appliedFilters);
+	    	        filterVBox.getChildren().addAll(removeFilt);
+	        	}
+	        };
+	        
+	        addFilter.setOnAction(applyFilter); //Apply the filter when the button is pressed
 	        
 	      //Button to add a food to the meal from the list. Only enabled if the food is selected
 	        Button addToMeal = new Button("Add to meal \u2794");
@@ -149,7 +174,7 @@ public class Main extends Application {
 	        //Add foods that met the filter. For now this is a default static list
 	        VBox foodListVBox = new VBox();
 	        foodListView = new ListView<>();
-	        for (FoodItem food : foodList) {
+	        for (FoodItem food : currFoods.getAllFoodItems()) {
 		        foodListView = addFoodToFilterList(foodListView, food);
 	        }
 	        foodListView.focusedProperty().addListener(new ChangeListener<Boolean>() {  
@@ -170,7 +195,8 @@ public class Main extends Application {
 	        HBox load = new HBox();
 	        Button loadFile = new Button("Import");
 	        loadFile.getStyleClass().add("custom-button");
-	        Label filepath = new Label("C:/Users/grantperry/Documents/FoodList.txt");
+	        Path currentPath = Paths.get(""); //Get the current working directory to add to the path in the label
+	        Label filepath = new Label(currentPath.toAbsolutePath().toString() + "\\foodItems.txt");
 	        load.getChildren().addAll(loadFile, filepath);
 	        load.setSpacing(10.0);
 	        load.setAlignment(Pos.CENTER_LEFT);
@@ -182,10 +208,10 @@ public class Main extends Application {
 	        		importFile.setTitle("Import");
 	        		File newFoodList = importFile.showOpenDialog(primaryStage);
 	        		if (newFoodList != null) {
-	        			parseFoodList(newFoodList.getPath());
+	        			currFoods.loadFoodItems(newFoodList.getPath());
 	        			filepath.setText(newFoodList.getPath());
 	        			foodListView.getItems().clear();
-	        			for (FoodItem food : foodList) {
+	        			for (FoodItem food : currFoods.getAllFoodItems()) {
 	        				addFoodToFilterList(foodListView, food);
 	        			}
 	        			
@@ -349,13 +375,7 @@ public class Main extends Application {
 	/**
 	 * Add a food to the list of available foods FoodsList that meet the filter requirements, if any
 	 * @param foodList - the FoodList to add the food to
-	 * @param food - the name of the food to add
-	 * @param cal - the number of calories in the food
-	 * @param carbs - the number of carbohydrates in the food
-	 * @param fat - the amount of fat in the food
-	 * @param fiber - the amount of fiber in the food
-	 * @param protein - the amount of protein in the food
-	 * @return the foodList ListView after the food has been added
+	 * @param food - the FoodItem to add
 	 */
 	private ListView<String> addFoodToFilterList(ListView<String> foodListView, FoodItem food) {
     	String name = food.getName();
@@ -422,82 +442,12 @@ public class Main extends Application {
         grid.add(remove, col, row);
         return grid;
 	}
-    /**
-     * Creates a new food item from a given set of data about that food item
-     * 
-     * @param id- the id of the new food item
-     * @param name- the name of the new food item
-     * @param calories- the number of calories in the food item
-     * @param fat- the number of fat grams in the food item
-     * @param carbs- the number of carbohydrate grams in the food item
-     * @param fiber- the number of fiber grams in the food item
-     * @param protein- the number of protein grams in the food item
-     * @return a food item object
-     */
-	private static FoodItem createFoodItem (String id, String name, double calories, double fat, double carbs, double fiber, double protein) {
-		FoodItem food = new FoodItem(id, name);
-		food.addNutrient(Nutrients.CALORIES.toString(), calories);
-		food.addNutrient(Nutrients.FAT.toString(), fat);
-		food.addNutrient(Nutrients.CARBOHYDRATES.toString(), carbs);
-		food.addNutrient(Nutrients.FIBER.toString(), fiber);
-		food.addNutrient(Nutrients.PROTEIN.toString(), protein);
-		return food;
-	}
 	
-    /**
-     * Adds a single food to the main food list and all associated nutrient trees
-     * 
-     * @param food-- the food item being added
-     */
-	public static void addFood (FoodItem food) {
-		foodList.add(food);
-	}
-	
-	 /**
-     * Parses the given text file and adds each food to the food list 
-     * 
-     * @param filePath- the path and name of the file containing the food items
-     */
-	public static void parseFoodList (String filePath) {
-		foodList = new TreeSet<FoodItem>();
-		try {
-			FileReader file = new FileReader(filePath);
-			BufferedReader bufferedReader = new BufferedReader(file);  //Create a buffered reader so we can read each line of the input file
-			String line;
-			while ((line = bufferedReader.readLine()) != null) {
-				String[] dataItems = line.split(","); //Split the line around the commas to get the relevant data elements
-				String id = dataItems[0];
-				String name = dataItems[1];
-				if (id == null || name == null) {
-					continue; //Skip this iteration of the while loop if we don't have a name or id for this line
-				}
-				try {
-					Double calories = Double.parseDouble(dataItems[3]);
-					Double fat = Double.parseDouble(dataItems[5]);
-					Double carbs = Double.parseDouble(dataItems[7]);
-					Double fiber = Double.parseDouble(dataItems[9]);
-					Double protein = Double.parseDouble(dataItems[11]);
-					FoodItem newFood = createFoodItem(id, name, calories, fat, carbs, fiber, protein); 
-					addFood(newFood);
-				}
-				catch (NumberFormatException ne) {
-					continue; //If we can't parse a given line and store the double values, just move to the next line--don't quit the program
-				}	
-			}
-		}
-		catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
 
 	public static void main(String[] args) {
 		//read a data file
 		//call other methods
 		//instantiate an ADT
-		parseFoodList("foodItems.txt");
-		for (FoodItem food : foodList) {
-			System.out.println(food.getName());
-		}
 		launch(args);
 	}
 
