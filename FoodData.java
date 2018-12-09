@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 import java.util.TreeSet;
@@ -22,6 +23,9 @@ public class FoodData implements FoodDataADT<FoodItem> {
     // Map of nutrients and their corresponding index
     private HashMap<String, BPTree<Double, FoodItem>> indexes;
     
+    // Set of all IDs, used to eliminate duplicates
+    private HashSet<String> ids;
+    
     
     /**
      * Public constructor
@@ -32,6 +36,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
         for (Nutrients n : Nutrients.values()) {
           indexes.put(n.toString(), new BPTree<>(5));
         }
+        ids = new HashSet<>();
     }
     
     /**
@@ -67,6 +72,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
       for (Nutrients n : Nutrients.values()) {
         indexes.put(n.toString(), new BPTree<>(5));
       }
+      ids = new HashSet<>();
       try (Scanner fileScanner = new Scanner(new File(filePath))){
         	String line;
         	while (fileScanner.hasNextLine()) {
@@ -83,7 +89,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
         		String name = foodItemData[1];
         		
         		// if id or name is blank, skip
-        		if (id.equals("") || name.equals("")) {
+        		if (id.equals("") || name.equals("") || ids.contains(id)) {
         			continue;
         		}
         		try {
@@ -95,6 +101,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
 					Double protein = Double.parseDouble(foodItemData[11]);
 					FoodItem newFood = createFoodItem(id, name, calories, fat, carbs, fiber, protein);
 					addFoodItem(newFood);
+					
         		} catch (NumberFormatException ne){
         			continue;
         		} 
@@ -160,6 +167,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
     @Override
     public void addFoodItem(FoodItem foodItem) {
         foodItemList.add(foodItem);
+        ids.add(foodItem.getID());
         for (Nutrients n : Nutrients.values()) {
           indexes.get(n.toString()).insert(foodItem.getNutrientValue(n.toString()), foodItem);
         }

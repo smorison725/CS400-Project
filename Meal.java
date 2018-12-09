@@ -11,11 +11,23 @@ public class Meal {
 	// list of all FoodItems within this meal
 	private List<FoodItem> mealList;
 	
+	// variables for each nutrient
+	private double totalCalories;
+	private double totalCarbs;
+	private double totalFat;
+	private double totalProtein;
+	private double totalFiber;
+	
 	/**
 	 * Meal constructor
 	 */
 	public Meal() {
 		mealList = new ArrayList<>();
+		totalCalories = 0.0;
+		totalCarbs = 0.0;
+		totalFat = 0.0;
+		totalProtein = 0.0;
+		totalFiber = 0.0;
 	}
 	
 	/**
@@ -48,7 +60,12 @@ public class Meal {
 	 * @param food FoodItem to add
 	 */
 	public void addToMeal(FoodItem food) {
-		mealList.add(food);
+	  totalCalories += food.getNutrientValue(Nutrients.CALORIES.toString());
+	  totalCarbs += food.getNutrientValue(Nutrients.CARBOHYDRATES.toString());
+      totalFat += food.getNutrientValue(Nutrients.FAT.toString());
+      totalProtein += food.getNutrientValue(Nutrients.PROTEIN.toString());
+      totalFiber += food.getNutrientValue(Nutrients.FIBER.toString());
+	  mealList.add(food);
 	}
 	
 	/**
@@ -57,7 +74,12 @@ public class Meal {
 	 * @param food FoodItem to remove
 	 */
 	public void removeFromMeal(FoodItem food) {
-		mealList.remove(food);
+	  totalCalories -= food.getNutrientValue(Nutrients.CALORIES.toString());
+      totalCarbs -= food.getNutrientValue(Nutrients.CARBOHYDRATES.toString());
+      totalFat -= food.getNutrientValue(Nutrients.FAT.toString());
+      totalProtein -= food.getNutrientValue(Nutrients.PROTEIN.toString());
+      totalFiber -= food.getNutrientValue(Nutrients.FIBER.toString());
+	  mealList.remove(food);
 	}
 	
 	/*
@@ -109,11 +131,18 @@ public class Meal {
 	 * @return the amount of the nutrient n in the Meal
 	 */
 	public double getTotalNutrient(Nutrients n) {
-		double nutrientAmount = 0.0;
-		for (FoodItem f : mealList) {
-			nutrientAmount += f.getNutrientValue(n.toString());
+		if (n.equals(Nutrients.CALORIES)) {
+		  return totalCalories;
+		} else if (n.equals(Nutrients.CARBOHYDRATES)) {
+		  return totalCarbs;
+		} else if (n.equals(Nutrients.FAT)) {
+		  return totalFat;
+		} else if (n.equals(Nutrients.FIBER)) {
+		  return totalFiber;
+		} else if (n.equals(Nutrients.PROTEIN)) {
+		  return totalProtein;
 		}
-		return nutrientAmount;
+		return 0.0;
 	}
 	
 }
