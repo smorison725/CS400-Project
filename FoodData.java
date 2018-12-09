@@ -68,6 +68,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
      */
     @Override
     public void loadFoodItems(String filePath) {
+      // when loading a new file, create a new FoodData object
       foodItemList = new TreeSet<>();
       for (Nutrients n : Nutrients.values()) {
         indexes.put(n.toString(), new BPTree<>(5));
@@ -89,7 +90,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
         		String name = foodItemData[1];
         		
         		// if id or name is blank, skip
-        		if (id.equals("") || name.equals("") || ids.contains(id)) {
+        		if (id.equals("") || name.equals("")) {
         			continue;
         		}
         		try {
@@ -166,10 +167,14 @@ public class FoodData implements FoodDataADT<FoodItem> {
      */
     @Override
     public void addFoodItem(FoodItem foodItem) {
-        foodItemList.add(foodItem);
-        ids.add(foodItem.getID());
-        for (Nutrients n : Nutrients.values()) {
-          indexes.get(n.toString()).insert(foodItem.getNutrientValue(n.toString()), foodItem);
+        // only add if there is no matching id present
+      if (!ids.contains(foodItem.getID())) {
+          // update all instance variables with new item
+          foodItemList.add(foodItem);
+          ids.add(foodItem.getID());
+          for (Nutrients n : Nutrients.values()) {
+            indexes.get(n.toString()).insert(foodItem.getNutrientValue(n.toString()), foodItem);
+          }
         }
     }
 
