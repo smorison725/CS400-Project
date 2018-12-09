@@ -92,5 +92,30 @@ public class FoodItem implements Comparable {
 		String nameCompared = foodToCompare.getName();
     	return (this.getName().compareTo(nameCompared)); //Use String's compareTo method to compare the names of the two foods
 	}
+	
+	/**
+	 * Determines if two food items are equal
+	 * 
+	 * @param o the FoodItem we are comparing this FoodItem to for equality
+	 * @return true if the ids of the two food items are the same, false otherwise
+	 */
+	@Override
+	/*public boolean equals(Object o) {
+	  // need to cast to food item first so that we have an id field to look at
+	  System.out.println(o);
+	  FoodItem otherFood = (FoodItem)o;
+	  
+	  // System.out.println(id);
+	  // System.out.println(otherFood.id);
+	  return this.id.equals(otherFood.id);
+	}*/
+	
+	public String toString() {
+	  return name + "\nCalories: " + Double.toString(nutrients.get(Nutrients.CALORIES.toString())) 
+	  + "\nCarbohydrates: " + Double.toString(nutrients.get(Nutrients.CARBOHYDRATES.toString())) 
+	  + " g\nFat " + Double.toString(nutrients.get(Nutrients.FAT.toString())) + " g\nFiber " 
+	  + Double.toString(nutrients.get(Nutrients.FIBER.toString())) + " g\nProtein " 
+	  + Double.toString(nutrients.get(Nutrients.PROTEIN.toString())) + " g";
+	}
     
 }

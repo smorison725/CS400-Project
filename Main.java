@@ -51,21 +51,20 @@ import javafx.scene.control.TextField;
  * @author Shannon Morison, Grant Perry, Kevin Boening, Billy Kirk
  */
 public class Main extends Application {
-	public static TreeSet<FoodItem> foodList; //Stores the complete list of food items
-	private static ListView<String> foodListView; //Stores the food list that we're viewing
+	public static FoodData foodList; //Stores the complete list of food items
+	private static ListView<FoodItem> foodListView; //Stores the food list that we're viewing
 	private static Meal meal;	//stores the current meal
+	
 	
 /**
  * Constructor for the Main class. It doesn't take any parameters but it does initialize the food list
  */
-	public Main () {
-		foodList = new TreeSet<FoodItem>();
-	}
+	
 	
 	@Override
 	public void start(Stage primaryStage) {
 		try {
-			foodList = new TreeSet<FoodItem>(); //Instantiate the foodList
+			foodList = new FoodData(); //Instantiate the foodList
 			Meal meal = new Meal();
 			//parseFoodList("foodItems.txt");
 			//Scene will consist of a VBox. The top node of the box will just be the exit button, and the bottom object will be a split pane
@@ -122,7 +121,7 @@ public class Main extends Application {
 	        addFilt.add(tf3, 2, 0);
 	        addFilt.add(addFilter, 3, 0);
 	        
-	      //Section for currently applied filters
+	        //Section for currently applied filters
 	        List<HBox> appliedFilters = new ArrayList<HBox>(); //Create a  list to store all the filters
 	        Label currFilt = new Label("Current filters");
 	        currFilt.getStyleClass().add("custom-subheader");
@@ -151,7 +150,7 @@ public class Main extends Application {
 	        filterVBox.getChildren().addAll(removeFilt);
 	        filterVBox.setSpacing(7.5);
 	        
-	      //Apply Filter action event that occurs when the Apply Filter button is pressed
+	        //Apply Filter action event that occurs when the Apply Filter button is pressed
 	        EventHandler<ActionEvent> applyFilter = new EventHandler<ActionEvent>() {
 	        	public void handle(ActionEvent e) {
 	        		String filterName = (String)type.getValue(); //Get the values place in the filter field and add them all to the current filters
@@ -189,8 +188,8 @@ public class Main extends Application {
 	        //Add foods that met the filter
 	        VBox foodListVBox = new VBox();
 	        foodListView = new ListView<>();
-	        for (FoodItem food : foodList) {
-		        foodListView = addFoodToFilterList(foodListView, food);
+	        for (FoodItem food : foodList.getAllFoodItems()) {
+		        addFoodToFilterList(foodListView, food);
 	        }
 	        foodListView.focusedProperty().addListener(new ChangeListener<Boolean>() {  
 	            @Override  
@@ -201,10 +200,11 @@ public class Main extends Application {
 	                	addToMeal.setOnAction(new EventHandler<ActionEvent>() {
 	        				@Override
 	        				public void handle(ActionEvent event) {
-	        					String foodStr = foodListView.getSelectionModel().getSelectedItem();
-	        					FoodItem addFood = foodFromString(foodStr);
+	        					FoodItem addFood = foodListView.getSelectionModel().getSelectedItem();
 	        					meal.addToMeal(addFood);
-	        					//Need to figure out how to add it to the meal grid after it's been added to the meal
+	        					
+	        					// add food tothe meal
+	        					addFoodToCurrentMealGrid(mealGrid, addFood, nutritionGrid);
 	        				}
 	        				});
 	                	}
@@ -217,7 +217,7 @@ public class Main extends Application {
 	        Region addAndSaveRegion1 = new HBox();
 	        HBox.setHgrow(addAndSaveRegion1, Priority.ALWAYS);
 	        
-	        //Button fod user adding an individual food to the list
+	        //Button for user adding an individual food to the list
 	        Button addFood = new Button("\uff0b Add food");
 	        addFood.getStyleClass().add("custom-button");
 	        addFood.setOnAction(new EventHandler<ActionEvent>() {
@@ -289,7 +289,7 @@ public class Main extends Application {
 	                		int nameHash = name.hashCode();
 	                		String id = "" + nameHash + calsD.toString().replace(".", "") + carbsD.toString().replace(".", "") + fatD.toString().replace(".", "") + fiberD.toString().replace(".", "") + proteinD.toString().replace(".", "");
 	                		FoodItem newFood = createFoodItem(id, name, calsD, fatD, carbsD, fiberD, proteinD); 
-	    					if(foodList.contains(newFood)) {
+	    					if(foodList.getAllFoodItems().contains(newFood)) {
 	    							//If the user-entered food is already in the list, give them a pop up that indicates it's a duplicate
 	    							final Stage dupFoodWindow = new Stage();
 	    							dupFoodWindow.initModality(Modality.APPLICATION_MODAL);
@@ -322,11 +322,11 @@ public class Main extends Application {
 	    							return;
 	    					}
 	    					
-	                		addFood(newFood);
+	                		foodList.addFoodItem(newFood);
 	                		
 	                		//Once the food has been saved, re-sort the available foods list
 	    					foodListView.getItems().clear();
-		        			for (FoodItem food : foodList) {
+		        			for (FoodItem food : foodList.getAllFoodItems()) {
 		        				addFoodToFilterList(foodListView, food);
 		        			}
 		        			
@@ -360,7 +360,7 @@ public class Main extends Application {
 	        		File newFoodFile = saveFile.showSaveDialog(primaryStage);
 	        		
 	        		if(newFoodFile != null) {
-	        			saveListToFile(newFoodFile);
+	        			foodList.saveFoodItems(newFoodFile.getPath());
 	        		}
 	        	}
 	        });
@@ -387,10 +387,10 @@ public class Main extends Application {
 	        		importFile.setTitle("Import");
 	        		File newFoodList = importFile.showOpenDialog(primaryStage);
 	        		if (newFoodList != null) {
-	        			parseFoodList(newFoodList.getPath());
+	        			foodList.loadFoodItems(newFoodList.getPath());
 	        			filepath.setText(newFoodList.getPath());
 	        			foodListView.getItems().clear();
-	        			for (FoodItem food : foodList) {
+	        			for (FoodItem food : foodList.getAllFoodItems()) {
 	        				addFoodToFilterList(foodListView, food);
 	        			}
 	        			
@@ -419,16 +419,16 @@ public class Main extends Application {
 	        
 	        //Current Meal Grid
 	        mealGrid.add(new Label("Pancakes"), 0, 0);
-	        mealGrid = addGridRemoveButton(mealGrid, 1, 0);
+	        addGridRemoveButton(mealGrid, 1, 0);
 	        
 	        mealGrid.add(new Label("Eggs"), 0, 1);
-	        mealGrid = addGridRemoveButton(mealGrid, 1, 1);
+	        addGridRemoveButton(mealGrid, 1, 1);
 	        
 	        mealGrid.add(new Label("Bacon"), 0, 2);
-	        mealGrid = addGridRemoveButton(mealGrid, 1, 2);
+	        addGridRemoveButton(mealGrid, 1, 2);
 	        
 	        mealGrid.add(new Label("Milk"), 0, 3);
-	        mealGrid = addGridRemoveButton(mealGrid, 1, 3);
+	        addGridRemoveButton(mealGrid, 1, 3);
 	        
 	        mealGrid.setHgap(20);
 	        mealGrid.setVgap(5);
@@ -463,13 +463,14 @@ public class Main extends Application {
 		    nutritionGrid.add(hdrProtein, 5, 0, 1, 1);
 	        
 	        //add foods from meal to nutrition table
-		    nutritionGrid = addNutritionTableRow(nutritionGrid, "Pancakes", 200, 20, 2, 2, 2, false);
-		    nutritionGrid = addNutritionTableRow(nutritionGrid, "Eggs", 100, 10, 1, 1, 1, false);
-		    nutritionGrid = addNutritionTableRow(nutritionGrid, "Bacon", 300, 30, 3, 3, 3, false);
-	        nutritionGrid = addNutritionTableRow(nutritionGrid, "Milk", 50, 5, 0, 0, 0, false);
+		    addNutritionTableRow(nutritionGrid, "Pancakes", 200, 20, 2, 2, 2, false);
+		    addNutritionTableRow(nutritionGrid, "Eggs", 100, 10, 1, 1, 1, false);
+		    addNutritionTableRow(nutritionGrid, "Bacon", 300, 30, 3, 3, 3, false);
+	        addNutritionTableRow(nutritionGrid, "Milk", 50, 5, 0, 0, 0, false);
 	        
 	        //nutrition totals
-	        nutritionGrid = addNutritionTableRow(nutritionGrid, "Total", 650, 65, 6, 6, 6, true);
+	        addNutritionTableRow(nutritionGrid, "Total", 650, 65, 6, 6, 6, true);
+	        
 	        
 	        nutritionGrid.setVgap(5.0);
 	        
@@ -517,7 +518,7 @@ public class Main extends Application {
 	 * @param isBold - whether the text in this row should be bolded. Only true for the Totals row
 	 * @return the GridPane grid after the row has been added to it
 	 */
-	private GridPane addNutritionTableRow(GridPane grid, String food, double cal, double carbs, double fat, double fiber, double protein, boolean isBold) {
+	private void addNutritionTableRow(GridPane grid, String food, double cal, double carbs, double fat, double fiber, double protein, boolean isBold) {
 		
 		//if this is the Totals row, add a blank row in between this and the last line
 		if(food.equals("Total")) {
@@ -556,7 +557,7 @@ public class Main extends Application {
         grid.add(col4, 3, newRow, 1, 1);
         grid.add(col5, 4, newRow, 1, 1);
         grid.add(col6, 5, newRow, 1, 1);
-		return grid;
+		// return grid;
 	}
 	
 	/**
@@ -570,15 +571,16 @@ public class Main extends Application {
 	 * @param protein - the amount of protein in the food
 	 * @return the foodList ListView after the food has been added
 	 */
-	private ListView<String> addFoodToFilterList(ListView<String> foodListView, FoodItem food) {
+	private void addFoodToFilterList(ListView<FoodItem> foodListView, FoodItem food) {
     	String name = food.getName();
     	Double calories = food.getNutrientValue(Nutrients.CALORIES.toString());
     	Double carbs = food.getNutrientValue(Nutrients.CARBOHYDRATES.toString());
     	Double fat = food.getNutrientValue(Nutrients.FAT.toString());
     	Double fiber = food.getNutrientValue(Nutrients.FIBER.toString());
     	Double protein = food.getNutrientValue(Nutrients.PROTEIN.toString());
-		foodListView.getItems().add(name + "\nCalories: " + Double.toString(calories) + "\nCarbohydrates: " + Double.toString(carbs) + " g\nFat " + Double.toString(fat) + " g\nFiber " + Double.toString(fiber) + " g\nProtein " + Double.toString(protein) + " g");
-		return foodListView;
+    	foodListView.getItems().add(food);
+		// foodListView.getItems().add(name + "\nCalories: " + Double.toString(calories) + "\nCarbohydrates: " + Double.toString(carbs) + " g\nFat " + Double.toString(fat) + " g\nFiber " + Double.toString(fiber) + " g\nProtein " + Double.toString(protein) + " g");
+		// return foodListView;
 	}
 	
 	/**
@@ -591,8 +593,8 @@ public class Main extends Application {
 	private GridPane addFoodToCurrentMealGrid(GridPane mealGrid, FoodItem food, GridPane nutritionGrid) {
 		int newRow = getRowCount(mealGrid);
 		mealGrid.add(new Label(food.getName()), 0, newRow);
-        mealGrid = addGridRemoveButton(mealGrid, 1, newRow);
-        nutritionGrid = addNutritionTableRow(nutritionGrid, food.getName(), food.getNutrientValue("calories"), food.getNutrientValue("carbohydrate"), food.getNutrientValue("fat"), food.getNutrientValue("fiber"), food.getNutrientValue("protein"), false);
+        addGridRemoveButton(mealGrid, 1, newRow);
+        addNutritionTableRow(nutritionGrid, food.getName(), food.getNutrientValue(Nutrients.CALORIES.toString()), food.getNutrientValue(Nutrients.CARBOHYDRATES.toString()), food.getNutrientValue(Nutrients.FAT.toString()), food.getNutrientValue(Nutrients.FIBER.toString()), food.getNutrientValue(Nutrients.PROTEIN.toString()), false);
 		return mealGrid;
 	}
 	
@@ -637,6 +639,7 @@ public class Main extends Application {
         Integer rowIndex = grid.getRowIndex(node);
         return rowIndex != null? rowIndex : 0;
     }
+	
 	/**
 	 * Returns the number of rows that node spans inside of the grid object. If it cannot be found, it returns 1
 	 * @param grid - the GridPane to evaluate
@@ -654,12 +657,12 @@ public class Main extends Application {
 	 * @param row - the row index where the button should be placed in grid
 	 * @return grid - the GridPane after the button has been inserted
 	 */
-	private GridPane addGridRemoveButton(GridPane grid, int col, int row) {
+	private void addGridRemoveButton(GridPane grid, int col, int row) {
 		Button remove = new Button("Remove \u2613");
         remove.getStyleClass().add("custom-button");
         remove.getStyleClass().add("remove-button");
         grid.add(remove, col, row);
-        return grid;
+        // return grid;
 	}
     /**
      * Creates a new food item from a given set of data about that food item
@@ -689,71 +692,7 @@ public class Main extends Application {
      * @param food-- the food item being added
      */
 	public static void addFood (FoodItem food) {
-		foodList.add(food);
-	}
-	
-	 /**
-     * Parses the given text file and adds each food to the food list 
-     * 
-     * @param filePath- the path and name of the file containing the food items
-     */
-	public static void parseFoodList (String filePath) {
-		foodList = new TreeSet<FoodItem>();
-		try {
-			FileReader file = new FileReader(filePath);
-			BufferedReader bufferedReader = new BufferedReader(file);  //Create a buffered reader so we can read each line of the input file
-			String line;
-			while ((line = bufferedReader.readLine()) != null) {
-				String[] dataItems = line.split(","); //Split the line around the commas to get the relevant data elements
-				String id = dataItems[0];
-				String name = dataItems[1];
-				if (id == null || name == null) {
-					continue; //Skip this iteration of the while loop if we don't have a name or id for this line
-				}
-				try {
-					Double calories = Double.parseDouble(dataItems[3]);
-					Double fat = Double.parseDouble(dataItems[5]);
-					Double carbs = Double.parseDouble(dataItems[7]);
-					Double fiber = Double.parseDouble(dataItems[9]);
-					Double protein = Double.parseDouble(dataItems[11]);
-					FoodItem newFood = createFoodItem(id, name, calories, fat, carbs, fiber, protein); 
-					addFood(newFood);
-				}
-				catch (NumberFormatException ne) {
-					continue; //If we can't parse a given line and store the double values, just move to the next line--don't quit the program
-				}	
-			}
-		}
-		catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-	
-	/**
-     * Prints out the current food list to a text file
-     * 
-     * @param food-- the file to write the current list to
-     */
-	public static void saveListToFile(File saveFile) {
-		try {
-			PrintWriter pw = new PrintWriter(saveFile);
-			for (FoodItem food : foodList) {
-				String id = food.getID();
-				String name = food.getName();
-				Double calories = food.getNutrientValue("Calories");
-				Double fat = food.getNutrientValue("Fat");
-				Double carbs = food.getNutrientValue("Carbohydrates");
-				Double fiber = food.getNutrientValue("Fiber");
-				Double protein = food.getNutrientValue("Protein");
-				String ln = id + "," + name + ",calories," + calories.toString() + ",fat," + fat.toString() + ",carbohydrate," + carbs + ",fiber," + fiber.toString() + ",protein," + protein.toString();
-				
-				pw.println(ln);
-			}
-			pw.close();
-		}
-		catch(Exception e) {
-			//Put a message here that we were unable to save the file
-		}
+		foodList.addFoodItem(food);
 	}
 
 	public static void main(String[] args) {

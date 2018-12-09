@@ -189,7 +189,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
 		  TreeSet<FoodItem> foodSet = new TreeSet<>(foodItemList); 
 		  
 		  for (FoodItem f : foodSet) { // write out one line for each FoodItem
-		    pw.println(f.getID()+","+f.getName()+",calories,"+f.getNutrientValue("CALORIES")+",fat"
+		    pw.println(f.getID()+","+f.getName()+",calories,"+f.getNutrientValue("CALORIES")+",fat,"
 		        +f.getNutrientValue("FAT")+",carbohydrate,"+f.getNutrientValue("CARBOHYDRATES")
 		        +",fiber,"+f.getNutrientValue("FIBER")+",protein,"+f.getNutrientValue("PROTEIN"));
 		  }
