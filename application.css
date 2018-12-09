@@ -1,0 +1,53 @@
+/* JavaFX CSS - Leave this comment until you have at least create one rule which uses -fx-Property */
+
+* {
+	-fx-text-fill: black;
+}
+
+.custom-button{
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 4px;
+    -fx-background-color: #d4d4d4;
+}
+ 
+.custom-button:hover {
+    -fx-background-color: #D9D9D9;
+}
+ 
+.custom-button:pressed {
+    -fx-background-color: #bababa;
+}
+
+.custom-label {
+	-fx-padding: 7px;
+}
+
+.exit-button {
+  	-fx-font-weight: bold;
+  	-fx-border-color: transparent;
+  	-fx-border-width: 0;
+  	-fx-text-fill: black;
+ }
+
+.list-cell:empty {
+    visibility:hidden;
+}
+
+.label {
+	-fx-font-size: 1em;
+    -fx-pref-height: 30px;
+}
+.label-bold {
+	-fx-font-weight: bold;
+}
+.remove-button {
+       -fx-text-fill: #ee2b29;
+}
+
+.custom-header {
+       -fx-font-size: 20px;
+}
+.custom-subheader {
+       -fx-font-size: 16px;
+}
