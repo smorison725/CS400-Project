@@ -167,20 +167,20 @@ public class Main extends Application {
             final Label blankCol6 = new Label("");
             
             // add blank row above totals
-            nutritionGrid.add(blankCol1, 0, 0, 1, 1);
-            nutritionGrid.add(blankCol2, 1, 0, 1, 1);
-            nutritionGrid.add(blankCol3, 2, 0, 1, 1);
-            nutritionGrid.add(blankCol4, 3, 0, 1, 1);
-            nutritionGrid.add(blankCol5, 4, 0, 1, 1);
-            nutritionGrid.add(blankCol6, 5, 0, 1, 1);
+            nutritionGrid.add(blankCol1, 0, 1, 1, 1);
+            nutritionGrid.add(blankCol2, 1, 1, 1, 1);
+            nutritionGrid.add(blankCol3, 2, 1, 1, 1);
+            nutritionGrid.add(blankCol4, 3, 1, 1, 1);
+            nutritionGrid.add(blankCol5, 4, 1, 1, 1);
+            nutritionGrid.add(blankCol6, 5, 1, 1, 1);
             
             // add totals row
-            nutritionGrid.add(totalName, 0, 1, 1, 1);
-            nutritionGrid.add(totalCalories, 1, 1, 1, 1);
-            nutritionGrid.add(totalCarbs, 2, 1, 1, 1);
-            nutritionGrid.add(totalFat, 3, 1, 1, 1);
-            nutritionGrid.add(totalFiber, 4, 1, 1, 1);
-            nutritionGrid.add(totalProtein, 5, 1, 1, 1);
+            nutritionGrid.add(totalName, 0, 2, 1, 1);
+            nutritionGrid.add(totalCalories, 1, 2, 1, 1);
+            nutritionGrid.add(totalCarbs, 2, 2, 1, 1);
+            nutritionGrid.add(totalFat, 3, 2, 1, 1);
+            nutritionGrid.add(totalFiber, 4, 2, 1, 1);
+            nutritionGrid.add(totalProtein, 5, 2, 1, 1);
             
             // bold columns in total row
             totalName.getStyleClass().add("label-bold");
@@ -566,7 +566,7 @@ public class Main extends Application {
 //	        grid.add(blankCol5, 4, newRow, 1, 1);
 //	        grid.add(blankCol6, 5, newRow, 1, 1);
 //		}
-		int newRow = getRowCount(grid) - 1;
+		int newRow = getRowCount(grid) - 2;
 		Label col1 = new Label(food);
 		Label col2 = new Label(Double.toString(cal));
 		Label col3 = new Label(Double.toString(carbs));
