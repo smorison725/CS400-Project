@@ -54,11 +54,8 @@ public class Main extends Application {
 	public static FoodData foodList; //Stores the complete list of food items
 	private static ListView<FoodItem> foodListView; //Stores the food list that we're viewing
 	private static Meal meal;	//stores the current meal
+	private static GridPane nutritionGrid; // grid for nutrition information
 	
-	
-/**
- * Constructor for the Main class. It doesn't take any parameters but it does initialize the food list
- */
 	
 	
 	@Override
@@ -73,7 +70,8 @@ public class Main extends Application {
 	        VBox left = new VBox();
 	        VBox right = new VBox();
 	        GridPane mealGrid = new GridPane();
-	        GridPane nutritionGrid = new GridPane();
+	        nutritionGrid = new GridPane();
+	        
 	        
 	        //Exit button
 	        Button exitProgram = new Button("\u2613");
@@ -150,6 +148,48 @@ public class Main extends Application {
 	        filterVBox.getChildren().addAll(removeFilt);
 	        filterVBox.setSpacing(7.5);
 	        
+	           //Meal Nutrition Grid
+            Label mealNutrition = new Label("Meal Nutrition");
+            mealNutrition.getStyleClass().add("custom-header");
+            
+            setUpNutritionGrid(nutritionGrid);
+            final Label totalName = new Label("Total");
+            final Label totalCalories = new Label(Double.toString(0.0));
+            final Label totalCarbs = new Label(Double.toString(0.0));
+            final Label totalFat = new Label(Double.toString(0.0));
+            final Label totalFiber = new Label(Double.toString(0.0));
+            final Label totalProtein = new Label(Double.toString(0.0));
+            final Label blankCol1 = new Label("");
+            final Label blankCol2 = new Label("");
+            final Label blankCol3 = new Label("");
+            final Label blankCol4 = new Label("");
+            final Label blankCol5 = new Label("");
+            final Label blankCol6 = new Label("");
+            
+            // add blank row above totals
+            nutritionGrid.add(blankCol1, 0, 0, 1, 1);
+            nutritionGrid.add(blankCol2, 1, 0, 1, 1);
+            nutritionGrid.add(blankCol3, 2, 0, 1, 1);
+            nutritionGrid.add(blankCol4, 3, 0, 1, 1);
+            nutritionGrid.add(blankCol5, 4, 0, 1, 1);
+            nutritionGrid.add(blankCol6, 5, 0, 1, 1);
+            
+            // add totals row
+            nutritionGrid.add(totalName, 0, 1, 1, 1);
+            nutritionGrid.add(totalCalories, 1, 1, 1, 1);
+            nutritionGrid.add(totalCarbs, 2, 1, 1, 1);
+            nutritionGrid.add(totalFat, 3, 1, 1, 1);
+            nutritionGrid.add(totalFiber, 4, 1, 1, 1);
+            nutritionGrid.add(totalProtein, 5, 1, 1, 1);
+            
+            // bold columns in total row
+            totalName.getStyleClass().add("label-bold");
+            totalCalories.getStyleClass().add("label-bold");
+            totalCarbs.getStyleClass().add("label-bold");
+            totalFat.getStyleClass().add("label-bold");
+            totalFiber.getStyleClass().add("label-bold");
+            totalProtein.getStyleClass().add("label-bold");
+	        
 	        //Apply Filter action event that occurs when the Apply Filter button is pressed
 	        EventHandler<ActionEvent> applyFilter = new EventHandler<ActionEvent>() {
 	        	public void handle(ActionEvent e) {
@@ -201,10 +241,33 @@ public class Main extends Application {
 	        				@Override
 	        				public void handle(ActionEvent event) {
 	        					FoodItem addFood = foodListView.getSelectionModel().getSelectedItem();
-	        					meal.addToMeal(addFood);
 	        					
-	        					// add food tothe meal
+	        					// add food to the meal grid
+	        					meal.addToMeal(addFood);
 	        					addFoodToCurrentMealGrid(mealGrid, addFood, nutritionGrid);
+	        					
+	        					// update blank row position
+	        					GridPane.setRowIndex(blankCol1, GridPane.getRowIndex(blankCol1) + 1);
+	        					GridPane.setRowIndex(blankCol2, GridPane.getRowIndex(blankCol2) + 1);
+	        					GridPane.setRowIndex(blankCol3, GridPane.getRowIndex(blankCol3) + 1);
+	        					GridPane.setRowIndex(blankCol4, GridPane.getRowIndex(blankCol4) + 1);
+	        					GridPane.setRowIndex(blankCol5, GridPane.getRowIndex(blankCol5) + 1);
+	        					GridPane.setRowIndex(blankCol6, GridPane.getRowIndex(blankCol6) + 1);
+	        					
+	        					// update totals
+	        					totalCalories.setText(Double.toString(meal.getTotalNutrient(Nutrients.CALORIES)));
+	        					totalCarbs.setText(Double.toString(meal.getTotalNutrient(Nutrients.CARBOHYDRATES)));
+	        					totalFat.setText(Double.toString(meal.getTotalNutrient(Nutrients.FAT)));
+	        					totalFiber.setText(Double.toString(meal.getTotalNutrient(Nutrients.FIBER)));
+	        					totalProtein.setText(Double.toString(meal.getTotalNutrient(Nutrients.PROTEIN)));
+	        					
+	        					// update totals row position
+	        					GridPane.setRowIndex(totalName, GridPane.getRowIndex(totalName) + 1);
+                                GridPane.setRowIndex(totalCalories, GridPane.getRowIndex(totalCalories) + 1);
+                                GridPane.setRowIndex(totalCarbs, GridPane.getRowIndex(totalCarbs) + 1);
+                                GridPane.setRowIndex(totalFat, GridPane.getRowIndex(totalFat) + 1);
+                                GridPane.setRowIndex(totalFiber, GridPane.getRowIndex(totalFiber) + 1);
+                                GridPane.setRowIndex(totalProtein, GridPane.getRowIndex(totalProtein) + 1);
 	        				}
 	        				});
 	                	}
@@ -405,8 +468,6 @@ public class Main extends Application {
 	        left.setSpacing(20);
 	        left.setPadding(new Insets(25, 25, 25, 25));
 	        
-	        //Right side
-	        
 	        //Current meal
 	        Label currentMeal = new Label("Current meal");
 	        currentMeal.getStyleClass().add("custom-header");
@@ -417,59 +478,28 @@ public class Main extends Application {
 	        mealCol2.setHalignment(HPos.RIGHT);
 	        mealGrid.getColumnConstraints().addAll(mealCol1, mealCol2);
 	        
-	        //Current Meal Grid
-	        mealGrid.add(new Label("Pancakes"), 0, 0);
-	        addGridRemoveButton(mealGrid, 1, 0);
-	        
-	        mealGrid.add(new Label("Eggs"), 0, 1);
-	        addGridRemoveButton(mealGrid, 1, 1);
-	        
-	        mealGrid.add(new Label("Bacon"), 0, 2);
-	        addGridRemoveButton(mealGrid, 1, 2);
-	        
-	        mealGrid.add(new Label("Milk"), 0, 3);
-	        addGridRemoveButton(mealGrid, 1, 3);
+//	        //Current Meal Grid
+//	        mealGrid.add(new Label("Pancakes"), 0, 0);
+//	        addGridRemoveButton(mealGrid, 1, 0);
+//	        
+//	        mealGrid.add(new Label("Eggs"), 0, 1);
+//	        addGridRemoveButton(mealGrid, 1, 1);
+//	        
+//	        mealGrid.add(new Label("Bacon"), 0, 2);
+//	        addGridRemoveButton(mealGrid, 1, 2);
+//	        
+//	        mealGrid.add(new Label("Milk"), 0, 3);
+//	        addGridRemoveButton(mealGrid, 1, 3);
 	        
 	        mealGrid.setHgap(20);
 	        mealGrid.setVgap(5);
 	        
-	        //Meal Nutrition Grid
-	        Label mealNutrition = new Label("Meal Nutrition");
-	        mealNutrition.getStyleClass().add("custom-header");
-	        ColumnConstraints col1 = new ColumnConstraints();
-		    col1.setPercentWidth(25);
-		    ColumnConstraints otherCols = new ColumnConstraints();
-		    otherCols.setPercentWidth(15);
-		    nutritionGrid.getColumnConstraints().addAll(col1, otherCols, otherCols, otherCols, otherCols, otherCols);
-	        
-	        //header nutrition row
-		    Label hdrFood = new Label("Food");
-		    hdrFood.getStyleClass().add("label-bold");
-		    Label hdrCal = new Label("Cal");
-		    hdrCal.getStyleClass().add("label-bold");
-		    Label hdrCarbs= new Label("Carbs (g)");
-		    hdrCarbs.getStyleClass().add("label-bold");
-		    Label hdrFat = new Label("Fat (g)");
-		    hdrFat.getStyleClass().add("label-bold");
-		    Label hdrFiber = new Label("Fiber (g)");
-		    hdrFiber.getStyleClass().add("label-bold");
-		    Label hdrProtein = new Label("Protein (g)");
-		    hdrProtein.getStyleClass().add("label-bold");
-		    nutritionGrid.add(hdrFood, 0, 0, 1, 1);
-		    nutritionGrid.add(hdrCal, 1, 0, 1, 1);
-		    nutritionGrid.add(hdrCarbs, 2, 0, 1, 1);
-		    nutritionGrid.add(hdrFat, 3, 0, 1, 1);
-		    nutritionGrid.add(hdrFiber, 4, 0, 1, 1);
-		    nutritionGrid.add(hdrProtein, 5, 0, 1, 1);
-	        
 	        //add foods from meal to nutrition table
-		    addNutritionTableRow(nutritionGrid, "Pancakes", 200, 20, 2, 2, 2, false);
-		    addNutritionTableRow(nutritionGrid, "Eggs", 100, 10, 1, 1, 1, false);
-		    addNutritionTableRow(nutritionGrid, "Bacon", 300, 30, 3, 3, 3, false);
-	        addNutritionTableRow(nutritionGrid, "Milk", 50, 5, 0, 0, 0, false);
+//		    addNutritionTableRow(nutritionGrid, "Pancakes", 200, 20, 2, 2, 2, false);
+//		    addNutritionTableRow(nutritionGrid, "Eggs", 100, 10, 1, 1, 1, false);
+//		    addNutritionTableRow(nutritionGrid, "Bacon", 300, 30, 3, 3, 3, false);
+//	        addNutritionTableRow(nutritionGrid, "Milk", 50, 5, 0, 0, 0, false);
 	        
-	        //nutrition totals
-	        addNutritionTableRow(nutritionGrid, "Total", 650, 65, 6, 6, 6, true);
 	        
 	        
 	        nutritionGrid.setVgap(5.0);
@@ -518,39 +548,39 @@ public class Main extends Application {
 	 * @param isBold - whether the text in this row should be bolded. Only true for the Totals row
 	 * @return the GridPane grid after the row has been added to it
 	 */
-	private void addNutritionTableRow(GridPane grid, String food, double cal, double carbs, double fat, double fiber, double protein, boolean isBold) {
+	private void addNutritionTableRow(GridPane grid, String food, double cal, double carbs, double fat, double fiber, double protein) {// , boolean isBold) {
 		
 		//if this is the Totals row, add a blank row in between this and the last line
-		if(food.equals("Total")) {
-			int newRow = getRowCount(grid);
-			Label blankCol1 = new Label("");
-			Label blankCol2 = new Label("");
-			Label blankCol3 = new Label("");
-			Label blankCol4 = new Label("");
-			Label blankCol5 = new Label("");
-			Label blankCol6 = new Label("");
-			grid.add(blankCol1, 0, newRow, 1, 1);
-	        grid.add(blankCol2, 1, newRow, 1, 1);
-	        grid.add(blankCol3, 2, newRow, 1, 1);
-	        grid.add(blankCol4, 3, newRow, 1, 1);
-	        grid.add(blankCol5, 4, newRow, 1, 1);
-	        grid.add(blankCol6, 5, newRow, 1, 1);
-		}
-		int newRow = getRowCount(grid);
+//		if(food.equals("Total")) {
+//			int newRow = getRowCount(grid);
+//			Label blankCol1 = new Label("");
+//			Label blankCol2 = new Label("");
+//			Label blankCol3 = new Label("");
+//			Label blankCol4 = new Label("");
+//			Label blankCol5 = new Label("");
+//			Label blankCol6 = new Label("");
+//			grid.add(blankCol1, 0, newRow, 1, 1);
+//	        grid.add(blankCol2, 1, newRow, 1, 1);
+//	        grid.add(blankCol3, 2, newRow, 1, 1);
+//	        grid.add(blankCol4, 3, newRow, 1, 1);
+//	        grid.add(blankCol5, 4, newRow, 1, 1);
+//	        grid.add(blankCol6, 5, newRow, 1, 1);
+//		}
+		int newRow = getRowCount(grid) - 1;
 		Label col1 = new Label(food);
 		Label col2 = new Label(Double.toString(cal));
 		Label col3 = new Label(Double.toString(carbs));
 		Label col4 = new Label(Double.toString(fat));
 		Label col5 = new Label(Double.toString(fiber));
 		Label col6 = new Label(Double.toString(protein));
-		if (isBold) {
-			col1.getStyleClass().add("label-bold");
-			col2.getStyleClass().add("label-bold");
-			col3.getStyleClass().add("label-bold");
-			col4.getStyleClass().add("label-bold");
-			col5.getStyleClass().add("label-bold");
-			col6.getStyleClass().add("label-bold");
-		}
+//		if (isBold) {
+//			col1.getStyleClass().add("label-bold");
+//			col2.getStyleClass().add("label-bold");
+//			col3.getStyleClass().add("label-bold");
+//			col4.getStyleClass().add("label-bold");
+//			col5.getStyleClass().add("label-bold");
+//			col6.getStyleClass().add("label-bold");
+//		}
 		grid.add(col1, 0, newRow, 1, 1);
         grid.add(col2, 1, newRow, 1, 1);
         grid.add(col3, 2, newRow, 1, 1);
@@ -594,19 +624,8 @@ public class Main extends Application {
 		int newRow = getRowCount(mealGrid);
 		mealGrid.add(new Label(food.getName()), 0, newRow);
         addGridRemoveButton(mealGrid, 1, newRow);
-        addNutritionTableRow(nutritionGrid, food.getName(), food.getNutrientValue(Nutrients.CALORIES.toString()), food.getNutrientValue(Nutrients.CARBOHYDRATES.toString()), food.getNutrientValue(Nutrients.FAT.toString()), food.getNutrientValue(Nutrients.FIBER.toString()), food.getNutrientValue(Nutrients.PROTEIN.toString()), false);
+        addNutritionTableRow(nutritionGrid, food.getName(), food.getNutrientValue(Nutrients.CALORIES.toString()), food.getNutrientValue(Nutrients.CARBOHYDRATES.toString()), food.getNutrientValue(Nutrients.FAT.toString()), food.getNutrientValue(Nutrients.FIBER.toString()), food.getNutrientValue(Nutrients.PROTEIN.toString())); // , false);
 		return mealGrid;
-	}
-	
-	/**
-	 * Add a food to the current meal grid
-	 * @param foodStr - the string from the listView to convert to a food
-	 * @return a food object converted from the listView string
-	 */
-	private FoodItem foodFromString(String foodStr) {
-		FoodItem food = null;
-		
-		return food;
 	}
 	
 	/**
@@ -664,6 +683,40 @@ public class Main extends Application {
         grid.add(remove, col, row);
         // return grid;
 	}
+	
+	
+	/**
+	 * Sets up the title column for the nutrition grid
+	 * 
+	 * @param nutritionGrid GridPane representing the grid for the meal's nutrition data
+	 */
+	private void setUpNutritionGrid(GridPane nutritionGrid) {
+	  ColumnConstraints col1 = new ColumnConstraints();
+      col1.setPercentWidth(25);
+      ColumnConstraints otherCols = new ColumnConstraints();
+      otherCols.setPercentWidth(15);
+      nutritionGrid.getColumnConstraints().addAll(col1, otherCols, otherCols, otherCols, otherCols, otherCols);
+      
+      //header nutrition row
+      Label hdrFood = new Label("Food");
+      hdrFood.getStyleClass().add("label-bold");
+      Label hdrCal = new Label("Cal");
+      hdrCal.getStyleClass().add("label-bold");
+      Label hdrCarbs= new Label("Carbs (g)");
+      hdrCarbs.getStyleClass().add("label-bold");
+      Label hdrFat = new Label("Fat (g)");
+      hdrFat.getStyleClass().add("label-bold");
+      Label hdrFiber = new Label("Fiber (g)");
+      hdrFiber.getStyleClass().add("label-bold");
+      Label hdrProtein = new Label("Protein (g)");
+      hdrProtein.getStyleClass().add("label-bold");
+      nutritionGrid.add(hdrFood, 0, 0, 1, 1);
+      nutritionGrid.add(hdrCal, 1, 0, 1, 1);
+      nutritionGrid.add(hdrCarbs, 2, 0, 1, 1);
+      nutritionGrid.add(hdrFat, 3, 0, 1, 1);
+      nutritionGrid.add(hdrFiber, 4, 0, 1, 1);
+      nutritionGrid.add(hdrProtein, 5, 0, 1, 1);
+	}
     /**
      * Creates a new food item from a given set of data about that food item
      * 
@@ -684,15 +737,6 @@ public class Main extends Application {
 		food.addNutrient(Nutrients.FIBER.toString(), fiber);
 		food.addNutrient(Nutrients.PROTEIN.toString(), protein);
 		return food;
-	}
-	
-    /**
-     * Adds a single food to the main food list and all associated nutrient trees
-     * 
-     * @param food-- the food item being added
-     */
-	public static void addFood (FoodItem food) {
-		foodList.addFoodItem(food);
 	}
 
 	public static void main(String[] args) {
