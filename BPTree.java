@@ -364,7 +364,7 @@ public class BPTree<K extends Comparable<K>, V> implements BPTreeADT<K, V> {
             
         	LeafNode startingNode = (LeafNode)currNode; //We should be able to safely cast this since we looped until we reached a leaf
         	LeafNode checkedNode = new LeafNode();
-        	if (comparator == "==") {
+        	if (comparator.contentEquals("==")) {
         		K lowKey = startingNode.getFirstLeafKey();
         		while (lowKey.compareTo(key) == 0) { //Keep looking at previous nodes until we find one that doesn't start with a key that equals our key--that's where we start
         			startingNode = startingNode.previous;
@@ -380,7 +380,7 @@ public class BPTree<K extends Comparable<K>, V> implements BPTreeADT<K, V> {
         		}
         	}
         	
-        	else if (comparator == "<=") {
+        	else if (comparator.contentEquals("<=")) {
         		int numStartingKeys = startingNode.keys.size();
         		K highKey = startingNode.keys.get(numStartingKeys - 1); //Find the last (highest) key in the keys array
         		while ((highKey.compareTo(key) <= 0) && (startingNode != null)) { //Keep looking at the next node until we find a node where the last key is higher than the value we're checking for--that's where we start
@@ -398,7 +398,7 @@ public class BPTree<K extends Comparable<K>, V> implements BPTreeADT<K, V> {
         		}
         	}
         	
-        	else if (comparator == ">=") {
+        	else if (comparator.contentEquals(">=")) {
         		K lowKey = startingNode.getFirstLeafKey(); //Find the first (lowest) key in the array
         		while ((lowKey.compareTo(key) >= 0) && (startingNode != null)) { //Keep looking at the previous node until we find a node where the first key is lower than the value we're searching for-that's where we start
         			startingNode = startingNode.previous;
@@ -556,7 +556,7 @@ public class BPTree<K extends Comparable<K>, V> implements BPTreeADT<K, V> {
         List<V> rangeSearch(K key, String comparator) {
             List<V> matchedValues = new LinkedList<V>();
             K currKey;
-            if (comparator == "==") { //Start by looping over all the keys to see which equal the compared key
+            if (comparator.contentEquals("==")) { //Start by looping over all the keys to see which equal the compared key
             	for (int i = 0; i < keys.size(); i++) {
             		currKey = keys.get(i);
             		if (currKey.compareTo(key) == 0) {
@@ -567,7 +567,7 @@ public class BPTree<K extends Comparable<K>, V> implements BPTreeADT<K, V> {
             		}
             	}
             }
-            else if (comparator == "<=") { //Now check which keys are less than or equal to the compared key
+            else if (comparator.contentEquals("<=")) { //Now check which keys are less than or equal to the compared key
             	for (int j = 0; j < keys.size(); j++) {
             		currKey = keys.get(j);
             		if (currKey.compareTo(key) <= 0) {
@@ -578,7 +578,7 @@ public class BPTree<K extends Comparable<K>, V> implements BPTreeADT<K, V> {
             		}
             	}
             }
-            else if (comparator == ">=") { //Now find the values with keys greater than the compared to key (search the other way through the keys list so we can stop if the keys get too small)
+            else if (comparator.contentEquals(">=")) { //Now find the values with keys greater than the compared to key (search the other way through the keys list so we can stop if the keys get too small)
             	for (int l = keys.size() - 1 ; l >= 0; l--) {
             		currKey = keys.get(l);
             		if (currKey.compareTo(key) >= 0) {
