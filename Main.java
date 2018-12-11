@@ -70,7 +70,7 @@ public class Main extends Application {
 		try {
 			foodList = new FoodData(); //Instantiate the foodList
 			Meal meal = new Meal();
-			foodList.loadFoodItems("foodItems.txt"); //Set the food item list to the initial path
+			// foodList.loadFoodItems("foodItems.txt"); //Set the food item list to the initial path
 			filteredFoods = new ArrayList<FoodItem>();
 			filteredFoods = foodList.getAllFoodItems(); //Set the filtered list to the full list initially
 			//Scene will consist of a VBox. The top node of the box will just be the exit button, and the bottom object will be a split pane
@@ -162,12 +162,6 @@ public class Main extends Application {
             mealNutrition.getStyleClass().add("custom-header");
             
             setUpNutritionGrid(nutritionGrid);
-            final Label totalName = new Label("Total");
-            final Label totalCalories = new Label(Double.toString(0.0));
-            final Label totalCarbs = new Label(Double.toString(0.0));
-            final Label totalFat = new Label(Double.toString(0.0));
-            final Label totalFiber = new Label(Double.toString(0.0));
-            final Label totalProtein = new Label(Double.toString(0.0));
             final Label blankCol1 = new Label("");
             final Label blankCol2 = new Label("");
             final Label blankCol3 = new Label("");
