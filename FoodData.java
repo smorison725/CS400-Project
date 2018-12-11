@@ -143,7 +143,7 @@ public class FoodData implements FoodDataADT<FoodItem> {
             tempList = nutFilt.executeFilter(indexes.get(pieces[0])); 
             
             // for the first rule, just add all the matching food
-            if (resultList.size() == 0) { 
+            if (resultList.size() == 0) {
               resultList.addAll(tempList);
             } else {
               for (FoodItem f : resultList) {
@@ -225,6 +225,16 @@ public class FoodData implements FoodDataADT<FoodItem> {
 		testFoods.loadFoodItems("foodItems.txt");
 		for (FoodItem food : testFoods.getAllFoodItems()) {
 			System.out.println(food.getName());
+		}
+		List<String> testFilters = new ArrayList<String>();
+		testFilters.add("CALORIES == 200");
+		List<FoodItem> testing = testFoods.indexes.get("CALORIES").rangeSearch(50.0, "<=");
+		for (FoodItem food : testing) {
+			System.out.println(food.getName());
+		}
+		List<FoodItem> filteredFoods = testFoods.filterByNutrients(testFilters);
+		for (FoodItem food : filteredFoods) {
+			System.out.println(food.getNutrientValue("CALORIES"));
 		}
 	}
 }

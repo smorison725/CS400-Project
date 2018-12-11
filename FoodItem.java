@@ -92,30 +92,19 @@ public class FoodItem implements Comparable {
 		String nameCompared = foodToCompare.getName();
     	return (this.getName().compareTo(nameCompared)); //Use String's compareTo method to compare the names of the two foods
 	}
-	
-	/**
-	 * Determines if two food items are equal
-	 * 
-	 * @param o the FoodItem we are comparing this FoodItem to for equality
-	 * @return true if the ids of the two food items are the same, false otherwise
-	 */
-	@Override
-	/*public boolean equals(Object o) {
-	  // need to cast to food item first so that we have an id field to look at
-	  System.out.println(o);
-	  FoodItem otherFood = (FoodItem)o;
-	  
-	  // System.out.println(id);
-	  // System.out.println(otherFood.id);
-	  return this.id.equals(otherFood.id);
-	}*/
-	
-	public String toString() {
-	  return name + "\nCalories: " + Double.toString(nutrients.get(Nutrients.CALORIES.toString())) 
-	  + "\nCarbohydrates: " + Double.toString(nutrients.get(Nutrients.CARBOHYDRATES.toString())) 
-	  + " g\nFat " + Double.toString(nutrients.get(Nutrients.FAT.toString())) + " g\nFiber " 
-	  + Double.toString(nutrients.get(Nutrients.FIBER.toString())) + " g\nProtein " 
-	  + Double.toString(nutrients.get(Nutrients.PROTEIN.toString())) + " g";
-	}
     
+    /**
+     * Returns a string version of the food with all its nutrition data
+     * 
+     * @return a string version of the food item
+     */
+	@Override
+	public String toString() {
+		Double calories = this.getNutrientValue(Nutrients.CALORIES.toString());
+    	Double carbs = this.getNutrientValue(Nutrients.CARBOHYDRATES.toString());
+    	Double fat = this.getNutrientValue(Nutrients.FAT.toString());
+    	Double fiber = this.getNutrientValue(Nutrients.FIBER.toString());
+    	Double protein = this.getNutrientValue(Nutrients.PROTEIN.toString());
+    	return (name + "\nCalories: " + Double.toString(calories) + "\nCarbohydrates: " + Double.toString(carbs) + " g\nFat " + Double.toString(fat) + " g\nFiber " + Double.toString(fiber) + " g\nProtein " + Double.toString(protein) + " g");
+	}
 }

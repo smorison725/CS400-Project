@@ -13,7 +13,7 @@ public class NutrientFilter {
 	// Comparator for the filter
 	private String comparator;
 	// value to be compared against
-	private double value;
+	private Double value;
 	
 	/**
 	 * Constructor for NutrientFilter
@@ -22,7 +22,7 @@ public class NutrientFilter {
 	 * @param c Comparator to use, either <=, >=, or ==
 	 * @param val value to compare based off of
 	 */
-	public NutrientFilter(String nut, String c, double val) {
+	public NutrientFilter(String nut, String c, Double val) {
 		nutrientName = nut;
 		comparator = c;
 		value = val;
