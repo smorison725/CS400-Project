@@ -65,7 +65,13 @@ public class Meal {
       totalFat += food.getNutrientValue(Nutrients.FAT.toString());
       totalProtein += food.getNutrientValue(Nutrients.PROTEIN.toString());
       totalFiber += food.getNutrientValue(Nutrients.FIBER.toString());
-	  mealList.add(food);
+      FoodItem foodCopy = new FoodItem(food.getID(), food.getName());
+      foodCopy.addNutrient(Nutrients.CALORIES.toString(), food.getNutrientValue(Nutrients.CALORIES.toString()));
+      foodCopy.addNutrient(Nutrients.CARBOHYDRATES.toString(), food.getNutrientValue(Nutrients.CARBOHYDRATES.toString()));
+      foodCopy.addNutrient(Nutrients.FAT.toString(), food.getNutrientValue(Nutrients.FAT.toString()));
+      foodCopy.addNutrient(Nutrients.PROTEIN.toString(), food.getNutrientValue(Nutrients.PROTEIN.toString()));
+      foodCopy.addNutrient(Nutrients.FIBER.toString(), food.getNutrientValue(Nutrients.FIBER.toString()));
+	  mealList.add(foodCopy);
 	}
 	
 	/**
@@ -81,48 +87,6 @@ public class Meal {
       totalFiber -= food.getNutrientValue(Nutrients.FIBER.toString());
 	  mealList.remove(food);
 	}
-	
-	/*
-	private double getTotalCalories() {
-		double calorieCount = 0.0;
-		for (FoodItem f : mealList) {
-			calorieCount += f.getNutrientValue("CALORIES");
-		}
-		return calorieCount;
-	}
-	
-	private double getTotalFat() {
-		double fatCount = 0.0;
-		for (FoodItem f : mealList) {
-			fatCount += f.getNutrientValue("FAT");
-		}
-		return fatCount;
-	}
-	
-	private double getTotalCarbohydrates() {
-		double carbCount = 0.0;
-		for (FoodItem f : mealList) {
-			carbCount += f.getNutrientValue("CARBOHYDRATES");
-		}
-		return carbCount;
-	}
-	
-	private double getTotalFiber() {
-		double fiberCount = 0.0;
-		for (FoodItem f : mealList) {
-			fiberCount += f.getNutrientValue("FIBER");
-		}
-		return fiberCount;
-	}
-	
-	private double getTotalProtein() {
-		double proteinCount = 0.0;
-		for (FoodItem f : mealList) {
-			proteinCount += f.getNutrientValue("PROTEIN");
-		}
-		return proteinCount;
-	}
-	*/
 	
 	/**
 	 * Computes the total amount of a given nutrient and returns that value
