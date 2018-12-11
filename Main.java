@@ -393,9 +393,12 @@ public class Main extends Application {
 	    	        addFoodGrid.setVgap(5);
 	    	        
 	    	        HBox addFoodHBox = new HBox();
+	    	        
 	    	        //Buttons at the bottom of the window for saving the food or exiting
 	    	        Button saveFood = new Button("Save");
+	    	        saveFood.getStyleClass().add("custom-button");
 	    	        Button exitFood = new Button("Exit");
+	    	        exitFood.getStyleClass().add("custom-button");
 	    	        Region addFoodRegion1 = new Region();
 	    	        HBox.setHgrow(addFoodRegion1, Priority.ALWAYS);
 	    	        addFoodHBox.getChildren().addAll(saveFood, addFoodRegion1, exitFood);
@@ -406,6 +409,7 @@ public class Main extends Application {
 	    	        
 	    	        //Add this window to the scene and set it
 	                Scene addFoodScene = new Scene(addFoodVBox, 350, 250);
+	                addFoodScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 	                addFoodGrid.setAlignment(Pos.TOP_CENTER);
 	                addFoodWindow.setScene(addFoodScene);
 	                addFoodWindow.show();
