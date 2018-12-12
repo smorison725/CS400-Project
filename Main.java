@@ -54,8 +54,6 @@ import javafx.scene.control.TextField;
 public class Main extends Application {
 	public static FoodData foodList; //Stores the complete list of food items
 	private static ListView<FoodItem> foodListView; //Stores the food list that we're viewing
-	private static Meal meal;	//stores the current meal
-	private static GridPane nutritionGrid; // grid for nutrition information
 	private static List<FoodItem> filteredFoods; //Stores the filtered list of foods
   	private static final Label totalName = new Label("Total");
   	private static final Label totalCalories = new Label(Double.toString(0.0));
@@ -280,13 +278,20 @@ public class Main extends Application {
 	                  public void handle(ActionEvent event) {
 	                    FoodItem addFood = foodListView.getSelectionModel().getSelectedItem();
 
-	                    // add food to the meal grid
-	                    meal.addToMeal(addFood);
-	                    int row = getRowCount(mealGrid);
-	                    addFoodToCurrentMealGrid(mealGrid, addFood, nutritionGrid);
+	                    // find correct spot to add the FoodItem
+	                    int i;
+	                    for (i = 0; i < meal.getMealList().size(); i++) {
+	                    	if (meal.getMealList().get(i).getName().compareToIgnoreCase(addFood.getName()) > 0) {
+	                    		break;
+	                    	}
+	                    }
+	                    meal.addToMeal(i, addFood);
+	                    
+	                    // add row to the meal grid
+	                    addFoodToCurrentMealGrid(i, mealGrid, addFood, nutritionGrid);
 
 	                    // add remove button for food
-	                    Button removeButton = addGridRemoveButton(mealGrid, 1, row);
+	                    Button removeButton = addGridRemoveButton(mealGrid, 1, i);
 	                    
 	                    // add action for remove button
 	                    removeButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -315,28 +320,12 @@ public class Main extends Application {
 
 	                    });
 
-	                    // update blank row position
-	                    GridPane.setRowIndex(blankCol1, GridPane.getRowIndex(blankCol1) + 1);
-	                    GridPane.setRowIndex(blankCol2, GridPane.getRowIndex(blankCol2) + 1);
-	                    GridPane.setRowIndex(blankCol3, GridPane.getRowIndex(blankCol3) + 1);
-	                    GridPane.setRowIndex(blankCol4, GridPane.getRowIndex(blankCol4) + 1);
-	                    GridPane.setRowIndex(blankCol5, GridPane.getRowIndex(blankCol5) + 1);
-	                    GridPane.setRowIndex(blankCol6, GridPane.getRowIndex(blankCol6) + 1);
-
 	                    // update totals
 	                    totalCalories.setText(Double.toString(meal.getTotalNutrient(Nutrients.CALORIES)));
 	                    totalCarbs.setText(Double.toString(meal.getTotalNutrient(Nutrients.CARBOHYDRATES)));
 	                    totalFat.setText(Double.toString(meal.getTotalNutrient(Nutrients.FAT)));
 	                    totalFiber.setText(Double.toString(meal.getTotalNutrient(Nutrients.FIBER)));
 	                    totalProtein.setText(Double.toString(meal.getTotalNutrient(Nutrients.PROTEIN)));
-
-	                    // update totals row position
-	                    GridPane.setRowIndex(totalName, GridPane.getRowIndex(totalName) + 1);
-	                    GridPane.setRowIndex(totalCalories, GridPane.getRowIndex(totalCalories) + 1);
-	                    GridPane.setRowIndex(totalCarbs, GridPane.getRowIndex(totalCarbs) + 1);
-	                    GridPane.setRowIndex(totalFat, GridPane.getRowIndex(totalFat) + 1);
-	                    GridPane.setRowIndex(totalFiber, GridPane.getRowIndex(totalFiber) + 1);
-	                    GridPane.setRowIndex(totalProtein, GridPane.getRowIndex(totalProtein) + 1);
 	                  }
 	                });
 	              } else {
@@ -617,6 +606,7 @@ public class Main extends Application {
 	
 	/**
 	 * Adds a row to the meal's nutrition totals table 
+	 * @param index - row to add the food on
 	 * @param grid - the nutrition totals table grid
 	 * @param food - name of the food, or may be Total for the last row
 	 * @param cal - number of calories in the food
@@ -627,45 +617,30 @@ public class Main extends Application {
 	 * @param isBold - whether the text in this row should be bolded. Only true for the Totals row
 	 * @return the GridPane grid after the row has been added to it
 	 */
-	private void addNutritionTableRow(GridPane grid, String food, double cal, double carbs, double fat, double fiber, double protein) {// , boolean isBold) {
+	private void addNutritionTableRow(int index, GridPane grid, String food, double cal, double carbs, double fat, double fiber, double protein) {// , boolean isBold) {
+		// bump down lower rows
+		for (Node n : grid.getChildren()) {
+		  int currentIndex = GridPane.getRowIndex(n);
+			if (currentIndex >= index) {
+			  GridPane.setRowIndex(n, currentIndex + 1);
+			}
+		}
 		
-		//if this is the Totals row, add a blank row in between this and the last line
-//		if(food.equals("Total")) {
-//			int newRow = getRowCount(grid);
-//			Label blankCol1 = new Label("");
-//			Label blankCol2 = new Label("");
-//			Label blankCol3 = new Label("");
-//			Label blankCol4 = new Label("");
-//			Label blankCol5 = new Label("");
-//			Label blankCol6 = new Label("");
-//			grid.add(blankCol1, 0, newRow, 1, 1);
-//	        grid.add(blankCol2, 1, newRow, 1, 1);
-//	        grid.add(blankCol3, 2, newRow, 1, 1);
-//	        grid.add(blankCol4, 3, newRow, 1, 1);
-//	        grid.add(blankCol5, 4, newRow, 1, 1);
-//	        grid.add(blankCol6, 5, newRow, 1, 1);
-//		}
-		int newRow = getRowCount(grid) - 2;
+		// set up labels
 		Label col1 = new Label(food);
 		Label col2 = new Label(Double.toString(cal));
 		Label col3 = new Label(Double.toString(carbs));
 		Label col4 = new Label(Double.toString(fat));
 		Label col5 = new Label(Double.toString(fiber));
 		Label col6 = new Label(Double.toString(protein));
-//		if (isBold) {
-//			col1.getStyleClass().add("label-bold");
-//			col2.getStyleClass().add("label-bold");
-//			col3.getStyleClass().add("label-bold");
-//			col4.getStyleClass().add("label-bold");
-//			col5.getStyleClass().add("label-bold");
-//			col6.getStyleClass().add("label-bold");
-//		}
-		grid.add(col1, 0, newRow, 1, 1);
-        grid.add(col2, 1, newRow, 1, 1);
-        grid.add(col3, 2, newRow, 1, 1);
-        grid.add(col4, 3, newRow, 1, 1);
-        grid.add(col5, 4, newRow, 1, 1);
-        grid.add(col6, 5, newRow, 1, 1);
+		
+		// add labels
+		grid.add(col1, 0, index, 1, 1);
+        grid.add(col2, 1, index, 1, 1);
+        grid.add(col3, 2, index, 1, 1);
+        grid.add(col4, 3, index, 1, 1);
+        grid.add(col5, 4, index, 1, 1);
+        grid.add(col6, 5, index, 1, 1);
 		// return grid;
 	}
 	
@@ -694,17 +669,26 @@ public class Main extends Application {
 	
 	/**
 	 * Add a food to the current meal grid
+	 * @param index - row to add the food on
 	 * @param foodList - the current meal grid
 	 * @param food - the food to add
 	 * @param nutritionGrid - the nutrition grid of the bottom of the screen that will also be updated with this food's nutrition info
 	 * @return the mealGrid GridPane after the food has been added
 	 */
-	private GridPane addFoodToCurrentMealGrid(GridPane mealGrid, FoodItem food, GridPane nutritionGrid) {
-		int newRow = getRowCount(mealGrid);
-		mealGrid.add(new Label(food.getName()), 0, newRow);
-        addGridRemoveButton(mealGrid, 1, newRow);
-        addNutritionTableRow(nutritionGrid, food.getName(), food.getNutrientValue(Nutrients.CALORIES.toString()), food.getNutrientValue(Nutrients.CARBOHYDRATES.toString()), food.getNutrientValue(Nutrients.FAT.toString()), food.getNutrientValue(Nutrients.FIBER.toString()), food.getNutrientValue(Nutrients.PROTEIN.toString())); // , false);
-		return mealGrid;
+	private void addFoodToCurrentMealGrid(int index, GridPane mealGrid, FoodItem food, GridPane nutritionGrid) {
+		// bump down lower rows
+		for (Node n : mealGrid.getChildren()) {
+			int currentIndex = GridPane.getRowIndex(n);
+			if (currentIndex >= index) {
+				GridPane.setRowIndex(n, currentIndex + 1);
+			}
+		}
+		
+		// add row to meal grid for new food item
+		mealGrid.add(new Label(food.getName()), 0, index);
+        
+		// add row to nutrition grid
+		addNutritionTableRow(index + 1, nutritionGrid, food.getName(), food.getNutrientValue(Nutrients.CALORIES.toString()), food.getNutrientValue(Nutrients.CARBOHYDRATES.toString()), food.getNutrientValue(Nutrients.FAT.toString()), food.getNutrientValue(Nutrients.FIBER.toString()), food.getNutrientValue(Nutrients.PROTEIN.toString())); // , false);
 	}
 	
 	/**

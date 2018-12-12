@@ -57,7 +57,7 @@ public class Meal {
 	/**
 	 * Adds one FoodItem to the Meal
 	 * 
-	 * @param food FoodItem to add
+	 * @param food FoodItem to add, actually adds a copy of this food item
 	 */
 	public void addToMeal(FoodItem food) {
 	  totalCalories += food.getNutrientValue(Nutrients.CALORIES.toString());
@@ -72,6 +72,28 @@ public class Meal {
       foodCopy.addNutrient(Nutrients.PROTEIN.toString(), food.getNutrientValue(Nutrients.PROTEIN.toString()));
       foodCopy.addNutrient(Nutrients.FIBER.toString(), food.getNutrientValue(Nutrients.FIBER.toString()));
 	  mealList.add(foodCopy);
+	}
+	
+	/**
+	 * Adds one FoodItem to the Meal
+	 * 
+	 * @param food FoodItem to add, actually adds a copy of this food item
+	 * @param index index in meal list to add the food item
+	 * 
+	 */
+	public void addToMeal(int index, FoodItem food) {
+	  totalCalories += food.getNutrientValue(Nutrients.CALORIES.toString());
+	  totalCarbs += food.getNutrientValue(Nutrients.CARBOHYDRATES.toString());
+      totalFat += food.getNutrientValue(Nutrients.FAT.toString());
+      totalProtein += food.getNutrientValue(Nutrients.PROTEIN.toString());
+      totalFiber += food.getNutrientValue(Nutrients.FIBER.toString());
+      FoodItem foodCopy = new FoodItem(food.getID(), food.getName());
+      foodCopy.addNutrient(Nutrients.CALORIES.toString(), food.getNutrientValue(Nutrients.CALORIES.toString()));
+      foodCopy.addNutrient(Nutrients.CARBOHYDRATES.toString(), food.getNutrientValue(Nutrients.CARBOHYDRATES.toString()));
+      foodCopy.addNutrient(Nutrients.FAT.toString(), food.getNutrientValue(Nutrients.FAT.toString()));
+      foodCopy.addNutrient(Nutrients.PROTEIN.toString(), food.getNutrientValue(Nutrients.PROTEIN.toString()));
+      foodCopy.addNutrient(Nutrients.FIBER.toString(), food.getNutrientValue(Nutrients.FIBER.toString()));
+	  mealList.add(index, foodCopy);
 	}
 	
 	/**
