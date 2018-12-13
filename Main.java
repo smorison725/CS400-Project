@@ -40,6 +40,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextField;
 
@@ -77,7 +78,10 @@ public class Main extends Application {
 	        VBox left = new VBox();
 	        VBox right = new VBox();
 	        GridPane mealGrid = new GridPane();
+	        ScrollPane mealScrollPane = new ScrollPane(mealGrid);
 	        GridPane nutritionGrid = new GridPane();
+	        ScrollPane nutritionScrollPane = new ScrollPane(nutritionGrid);
+	        nutritionScrollPane.setFitToWidth(true);
 	        
 	        
 	        //Exit button
@@ -229,6 +233,9 @@ public class Main extends Application {
         			for (FoodItem food : filteredFoods) {
         				addFoodToFilterList(foodListView, food);
         			}
+        			
+        			// disable button after applying since we clear out fields
+        			addFilter.setDisable(true);
 	        	}
 	        };
 	        
@@ -271,7 +278,7 @@ public class Main extends Application {
 	            @Override
 	            public void changed(ObservableValue<? extends Boolean> observable, Boolean wasFocused,
 	                Boolean isFocused) {
-	              if (isFocused) {
+	              if (foodListView.getSelectionModel().getSelectedItem() != null && isFocused) {
 	                addToMeal.setDisable(false);
 	                addToMeal.setOnAction(new EventHandler<ActionEvent>() {
 	                  @Override
@@ -291,7 +298,7 @@ public class Main extends Application {
 	                    addFoodToCurrentMealGrid(i, mealGrid, addFood, nutritionGrid);
 
 	                    // add remove button for food
-	                    Button removeButton = addGridRemoveButton(mealGrid, 1, i);
+	                    Button removeButton = addGridRemoveButton(mealGrid, 2, i);
 	                    
 	                    // add action for remove button
 	                    removeButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -406,15 +413,28 @@ public class Main extends Application {
 	                saveFood.setOnAction(new EventHandler<ActionEvent>() {
 	                	@Override
 	                	public void handle(ActionEvent event) {
-	                		String name = foodName.getText();
-	                		Double calsD = Double.valueOf(calories.getText());
-	                		Double carbsD = Double.valueOf(carbs.getText());
-	                		Double fatD = Double.valueOf(fat.getText());
-	                		Double fiberD = Double.valueOf(fiber.getText());
-	                		Double proteinD = Double.valueOf(protein.getText());
-	                		int nameHash = name.hashCode();
-	                		String id = "" + nameHash + calsD.toString().replace(".", "") + carbsD.toString().replace(".", "") + fatD.toString().replace(".", "") + fiberD.toString().replace(".", "") + proteinD.toString().replace(".", "");
-	                		FoodItem newFood = createFoodItem(id, name, calsD, fatD, carbsD, fiberD, proteinD); 
+	                		String name;
+	                		Double calsD;
+	                		Double carbsD;
+	                		Double fatD;
+	                		Double fiberD;
+	                		Double proteinD;
+	                		FoodItem newFood = null;
+	                		
+	                		try {
+	                			name = foodName.getText();
+	                			calsD = Double.valueOf(calories.getText());
+		                		carbsD = Double.valueOf(carbs.getText());
+		                		fatD = Double.valueOf(fat.getText());
+		                		fiberD = Double.valueOf(fiber.getText());
+		                		proteinD = Double.valueOf(protein.getText());
+		                		int nameHash = name.hashCode();
+		                		String id = "" + nameHash + calsD.toString().replace(".", "") + carbsD.toString().replace(".", "") + fatD.toString().replace(".", "") + fiberD.toString().replace(".", "") + proteinD.toString().replace(".", "");
+		                		newFood = createFoodItem(id, name, calsD, fatD, carbsD, fiberD, proteinD); 
+	                		} catch (NumberFormatException nf) {
+	                			
+	                		} 	                		
+
 	    					if(foodList.getAllFoodItems().contains(newFood)) {
 	    							//If the user-entered food is already in the list, give them a pop up that indicates it's a duplicate
 	    							final Stage dupFoodWindow = new Stage();
@@ -571,11 +591,12 @@ public class Main extends Application {
 	        
 	        
 	        nutritionGrid.setVgap(5.0);
+	        nutritionGrid.setHgap(0);
 	        
 	        Region region5 = new Region();
 	        VBox.setVgrow(region5, Priority.ALWAYS);
 
-	        right.getChildren().addAll(currentMeal, mealGrid, region5, mealNutrition, nutritionGrid);
+	        right.getChildren().addAll(currentMeal, mealScrollPane, region5, mealNutrition, nutritionScrollPane);
 	        right.setSpacing(25);
 	        right.setPadding(new Insets(25, 25, 25, 25));
 	        right.setAlignment(Pos.CENTER);
