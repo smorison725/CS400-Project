@@ -36,6 +36,8 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -422,67 +424,92 @@ public class Main extends Application {
 	                		FoodItem newFood = null;
 	                		
 	                		try {
-	                			name = foodName.getText();
-	                			calsD = Double.valueOf(calories.getText());
-		                		carbsD = Double.valueOf(carbs.getText());
-		                		fatD = Double.valueOf(fat.getText());
-		                		fiberD = Double.valueOf(fiber.getText());
-		                		proteinD = Double.valueOf(protein.getText());
-		                		int nameHash = name.hashCode();
-		                		String id = "" + nameHash + calsD.toString().replace(".", "") + carbsD.toString().replace(".", "") + fatD.toString().replace(".", "") + fiberD.toString().replace(".", "") + proteinD.toString().replace(".", "");
-		                		newFood = createFoodItem(id, name, calsD, fatD, carbsD, fiberD, proteinD); 
-	                		} catch (NumberFormatException nf) {
-	                			
-	                		} 	                		
-
-	    					if(foodList.getAllFoodItems().contains(newFood)) {
+	                			name = foodName.getText().trim();
+	                			calsD = Double.valueOf(calories.getText().trim());
+		                		carbsD = Double.valueOf(carbs.getText().trim());
+		                		fatD = Double.valueOf(fat.getText().trim());
+		                		fiberD = Double.valueOf(fiber.getText().trim());
+		                		proteinD = Double.valueOf(protein.getText().trim());
+		                	if (!(calsD >= 0.0) | !(carbsD >= 0.0) | !(fatD >= 0.0) | !(fiberD >= 0.0) | !(proteinD >= 0.0)) {
+	                				Alert fail = new Alert(AlertType.ERROR);
+	                				fail.setTitle("Invalid Nutrient");
+	                				fail.setContentText("Nutrient values must be a number greater than or equal to zero");
+	                				fail.setHeaderText(null);
+	                				fail.setGraphic(null);
+	                				calories.clear();
+	                				carbs.clear();
+	                				fat.clear();
+	                				fiber.clear();
+	                				protein.clear();
+	                				foodName.clear();
+	                				fail.showAndWait();
+	                				return;
+	                			}
+		                	if(name.isEmpty()) {
+		                			Alert fail = new Alert(AlertType.ERROR);
+	                				fail.setTitle("Empty Name");
+	                				fail.setContentText("Food must have a name");
+	                				fail.setHeaderText(null);
+	                				fail.setGraphic(null);
+	                				calories.clear();
+	                				carbs.clear();
+	                				fat.clear();
+	                				fiber.clear();
+	                				protein.clear();
+	                				foodName.clear();
+	                				fail.showAndWait();
+	                				return;
+		                		}
+		                	int nameHash = name.hashCode();
+		                	String id = "" + nameHash + calsD.toString().replace(".", "") + carbsD.toString().replace(".", "") + fatD.toString().replace(".", "") + fiberD.toString().replace(".", "") + proteinD.toString().replace(".", "");
+		                	newFood = createFoodItem(id, name, calsD, fatD, carbsD, fiberD, proteinD); 
+	                		if(foodList.getIDs().contains(id)) {
 	    							//If the user-entered food is already in the list, give them a pop up that indicates it's a duplicate
-	    							final Stage dupFoodWindow = new Stage();
-	    							dupFoodWindow.initModality(Modality.APPLICATION_MODAL);
-	    							dupFoodWindow.initOwner(primaryStage);
-	    		                
-	    							VBox duplicateFoodV = new VBox();
-	    							Label dupFood = new Label("This food is already in the list.");
-	    							HBox duplicateFoodH = new HBox();
-	    							Region dupFoodRegion = new Region();
-	    							HBox.setHgrow(dupFoodRegion, Priority.ALWAYS);
-	    							Button dupFoodOk = new Button("OK");
-	    							dupFoodOk.getStyleClass().add("custom-button");
-	    							duplicateFoodH.getChildren().addAll(dupFoodRegion, dupFoodOk);
-	    							duplicateFoodV.getChildren().addAll(dupFood, duplicateFoodH);
-	    							duplicateFoodV.setAlignment(Pos.TOP_LEFT);
-	    							duplicateFoodV.setPadding(new Insets(5, 10, 5, 10));
-	    							duplicateFoodV.setSpacing(25);
-	    							Scene dupFoodScene = new Scene(duplicateFoodV, 300, 100);
-	    							
-	    							dupFoodWindow.setScene(dupFoodScene);
-	    							dupFoodWindow.show();
-	    							
-	    							dupFoodOk.setOnAction(new EventHandler<ActionEvent>() {
-	    								@Override
-	    								public void handle(ActionEvent event) {
-	    									dupFoodWindow.close();
-	    								}
-	    								});
-	    							
-	    							return;
+		                			Alert fail = new Alert(AlertType.ERROR);
+	                				fail.setTitle("Food Already Exists");
+	                				fail.setContentText(name + " is already in the list.");
+	                				fail.setHeaderText(null);
+	                				fail.setGraphic(null);
+	                				calories.clear();
+	                				carbs.clear();
+	                				fat.clear();
+	                				fiber.clear();
+	                				protein.clear();
+	                				foodName.clear();
+	                				fail.showAndWait();
+	                				return;
 	    					}
-	    					
-	                		foodList.addFoodItem(newFood);
-	                		
-	                		//Once the food has been saved, re-sort the available foods list
-	    					foodListView.getItems().clear();
-		        			for (FoodItem food : foodList.getAllFoodItems()) {
-		        				addFoodToFilterList(foodListView, food);
-		        			}
-		        			
-		        			//Clear the grid dialog
-	    					foodName.clear();
-	    					calories.clear();
-	    					carbs.clear();
-	    					fat.clear();
-	    					fiber.clear();
-	    					protein.clear();
+		                	else {
+		                			foodList.addFoodItem(newFood);
+			                		//Once the food has been saved, re-sort the available foods list
+			    					foodListView.getItems().clear();
+				        			for (FoodItem food : foodList.getAllFoodItems()) {
+				        				addFoodToFilterList(foodListView, food);
+				        			}
+				        			
+				        			//Clear the grid dialog
+			    					foodName.clear();
+			    					calories.clear();
+			    					carbs.clear();
+			    					fat.clear();
+			    					fiber.clear();
+			    					protein.clear();
+		                		}
+	                		} 
+	                		catch (NumberFormatException nf) {
+	                			Alert fail = new Alert(AlertType.ERROR);
+                				fail.setTitle("Invalid nutrient");
+                				fail.setContentText("Nutrient values must be a number greater than or equal to zero");
+                				fail.setHeaderText(null);
+                				fail.setGraphic(null);
+                				calories.clear();
+                				carbs.clear();
+                				fat.clear();
+                				fiber.clear();
+                				protein.clear();
+                				foodName.clear();
+                				fail.showAndWait();
+	                		} 	                		
 	                	}
 	                	});
 	                
