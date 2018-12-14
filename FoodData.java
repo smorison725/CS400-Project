@@ -37,6 +37,14 @@ public class FoodData implements FoodDataADT<FoodItem> {
     }
     ids = new HashSet<>();
   }
+  
+  /**
+     * Getter method for the ids HashSet
+     * @return ids - private member
+     */
+    public HashSet<String> getIDs() {
+    	return ids;
+    }
 
   /**
    * Creates a new food item from a given set of data about that food item
