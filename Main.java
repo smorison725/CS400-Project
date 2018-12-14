@@ -1,18 +1,10 @@
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
@@ -21,21 +13,15 @@ import javafx.geometry.Pos;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.Shape;
-import javafx.scene.text.Text;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -103,9 +89,9 @@ public class Main extends Application {
 	        filtCol4.setPercentWidth(20);
 	        addFilt.getColumnConstraints().addAll(filtCol1, filtCol2, filtCol3, filtCol4);
 	        addFilt.setHgap(10);
-	        ComboBox type = new ComboBox();
+	        ComboBox<String> type = new ComboBox<>();
 	        type.getItems().addAll("Name", "Calories", "Carbohydrates", "Fat", "Fiber", "Protein");
-	        ComboBox operator = new ComboBox();
+	        ComboBox<String> operator = new ComboBox<>();
 	        operator.getItems().addAll("contains", "=", "<=", ">=");
 	        TextField tf3 = new TextField();
 	        Button addFilter = new Button("Apply filter");
@@ -200,9 +186,62 @@ public class Main extends Application {
 	        //Apply Filter action event that occurs when the Apply Filter button is pressed
 	        EventHandler<ActionEvent> applyFilter = new EventHandler<ActionEvent>() {
 	        	public void handle(ActionEvent e) {
-	        		String filterName = (String)type.getValue(); //Get the values place in the filter field and add them all to the current filters
-	        		String operatorName = (String)operator.getValue();
-	        		String valueName = tf3.getText();
+	        		String filterName = null; //Get the values place in the filter field and add them all to the current filters
+	        		String operatorName = null;
+	        		String valueName = null;
+	        		Double dValue;
+	        		Alert fail = new Alert(AlertType.ERROR);
+	        		try {
+	        			filterName = (String)type.getValue();
+	        			operatorName = (String)operator.getValue();
+	        			valueName = tf3.getText();
+	        			
+	        			// don't allow name filter for non-contains operator, similarly don't allow contains to be used with non-Name filter
+	        			if ((filterName.equals("Name") && !operatorName.equals("contains")) 
+	        					|| (!filterName.equals("Name") && operatorName.equals("contains"))) { 
+	        				fail.setTitle("Incompatible Operation");
+	        				fail.setContentText(operatorName + " is incompatible with a filter of " + filterName);
+	        				fail.setHeaderText(null);
+	        				fail.setGraphic(null);
+	        				type.valueProperty().set(null);
+	        				operator.valueProperty().set(null);
+	        				tf3.clear();
+	        				fail.showAndWait();
+	        				return;
+	        			}
+	        			
+	        			// don't allow empty value field
+	        			if (valueName.equals("")) {
+	        				fail.setTitle("Invalid Value");
+	        				fail.setContentText("Cannot filter on empty value");
+	        				fail.setHeaderText(null);
+	        				fail.setGraphic(null);
+	        				type.valueProperty().set(null);
+	        				operator.valueProperty().set(null);
+	        				tf3.clear();
+	        				fail.showAndWait();
+	        				return;
+	        			}
+	        			
+	        			// don't allow negative or non-numeric values to be used with the non-contains operator 
+	        			// (at this point we know that the operator and filter name are compatible)
+	        			if (!operatorName.equals("contains")) {
+	        				dValue = Double.parseDouble(valueName);
+	        				if (dValue < 0.0) {
+	        					throw new NumberFormatException();
+	        				}
+	        			}
+	        		} catch (NumberFormatException nf) {
+	        			fail.setTitle("Invalid Number Value");
+	        			fail.setContentText("Filter value for " + operatorName + " operator must be a positive number");
+	        			fail.setHeaderText(null);
+	        			fail.setGraphic(null);
+	        			type.valueProperty().set(null);
+	        			operator.valueProperty().set(null);
+	        			tf3.clear();
+	        			fail.showAndWait();
+	        			return;
+	        		}
 	    	        Label lbl1 = new Label(filterName);
 	    	        Label lbl2 = new Label(operatorName);
 	    	        Label lbl3 = new Label(valueName);
@@ -228,7 +267,9 @@ public class Main extends Application {
 		    	        	operatorName = "=="; //Update the operator name to ==
 		    	        }
 		    	        filters.add(filterName.toUpperCase() + " " + operatorName + " " + valueName);
-	    	        	tempList = foodList.filterByNutrients(filters);
+	    	        	if (foodListView.getItems().size() > 0) {
+	    	        		tempList = foodList.filterByNutrients(filters);
+	    	        	}
 	    	        	filteredFoods.retainAll(tempList);
 	    	        }
 	    	        foodListView.getItems().clear(); //Reprint the filtered list
@@ -280,61 +321,64 @@ public class Main extends Application {
 	            @Override
 	            public void changed(ObservableValue<? extends Boolean> observable, Boolean wasFocused,
 	                Boolean isFocused) {
-	              if (foodListView.getSelectionModel().getSelectedItem() != null && isFocused) {
+	              if (isFocused) {
 	                addToMeal.setDisable(false);
 	                addToMeal.setOnAction(new EventHandler<ActionEvent>() {
 	                  @Override
 	                  public void handle(ActionEvent event) {
-	                    FoodItem addFood = foodListView.getSelectionModel().getSelectedItem();
+	                	if (foodListView.getSelectionModel().getSelectedItem() != null) {
+	                		FoodItem addFood = foodListView.getSelectionModel().getSelectedItem();
 
-	                    // find correct spot to add the FoodItem
-	                    int i;
-	                    for (i = 0; i < meal.getMealList().size(); i++) {
-	                    	if (meal.getMealList().get(i).getName().compareToIgnoreCase(addFood.getName()) > 0) {
-	                    		break;
-	                    	}
-	                    }
-	                    meal.addToMeal(i, addFood);
+		                    // find correct spot to add the FoodItem
+		                    int i;
+		                    for (i = 0; i < meal.getMealList().size(); i++) {
+		                    	if (meal.getMealList().get(i).getName().compareToIgnoreCase(addFood.getName()) > 0) {
+		                    		break;
+		                    	}
+		                    }
+		                    meal.addToMeal(i, addFood);
+		                    
+		                    // add row to the meal grid
+		                    addFoodToCurrentMealGrid(i, mealGrid, addFood, nutritionGrid);
+
+		                    // add remove button for food
+		                    Button removeButton = addGridRemoveButton(mealGrid, 2, i);
+		                    
+		                    // add action for remove button
+		                    removeButton.setOnAction(new EventHandler<ActionEvent>() {
+		                      @Override
+		                      public void handle(ActionEvent event) {
+		                        // set up which rows we want to remove in each grid
+		                        int mealRowToRemove = GridPane.getRowIndex(removeButton);
+		                        int nutritionRowToRemove = mealRowToRemove + 1;
+		                        
+		                        // remove corresponding food from meal
+		                        meal.removeFromMeal(meal.getMealList().get(GridPane.getRowIndex(removeButton)));
+		                        
+		                        // remove row from meal grid, bump up lower rows
+		                        removeRow(mealGrid, mealRowToRemove);
+		                        
+		                        // remove row from nutrition grid, bump up lower rows
+		                        removeRow(nutritionGrid, nutritionRowToRemove);
+
+		                        // update totals row
+		                        totalCalories.setText(Double.toString(meal.getTotalNutrient(Nutrients.CALORIES)));
+		                        totalCarbs.setText(Double.toString(meal.getTotalNutrient(Nutrients.CARBOHYDRATES)));
+		                        totalFat.setText(Double.toString(meal.getTotalNutrient(Nutrients.FAT)));
+		                        totalFiber.setText(Double.toString(meal.getTotalNutrient(Nutrients.FIBER)));
+		                        totalProtein.setText(Double.toString(meal.getTotalNutrient(Nutrients.PROTEIN)));
+		                      }
+
+		                    });
+
+		                    // update totals
+		                    totalCalories.setText(Double.toString(meal.getTotalNutrient(Nutrients.CALORIES)));
+		                    totalCarbs.setText(Double.toString(meal.getTotalNutrient(Nutrients.CARBOHYDRATES)));
+		                    totalFat.setText(Double.toString(meal.getTotalNutrient(Nutrients.FAT)));
+		                    totalFiber.setText(Double.toString(meal.getTotalNutrient(Nutrients.FIBER)));
+		                    totalProtein.setText(Double.toString(meal.getTotalNutrient(Nutrients.PROTEIN)));
+	                	}
 	                    
-	                    // add row to the meal grid
-	                    addFoodToCurrentMealGrid(i, mealGrid, addFood, nutritionGrid);
-
-	                    // add remove button for food
-	                    Button removeButton = addGridRemoveButton(mealGrid, 2, i);
-	                    
-	                    // add action for remove button
-	                    removeButton.setOnAction(new EventHandler<ActionEvent>() {
-	                      @Override
-	                      public void handle(ActionEvent event) {
-	                        // set up which rows we want to remove in each grid
-	                        int mealRowToRemove = GridPane.getRowIndex(removeButton);
-	                        int nutritionRowToRemove = mealRowToRemove + 1;
-	                        
-	                        // remove corresponding food from meal
-	                        meal.removeFromMeal(meal.getMealList().get(GridPane.getRowIndex(removeButton)));
-	                        
-	                        // remove row from meal grid, bump up lower rows
-	                        removeRow(mealGrid, mealRowToRemove);
-	                        
-	                        // remove row from nutrition grid, bump up lower rows
-	                        removeRow(nutritionGrid, nutritionRowToRemove);
-
-	                        // update totals row
-	                        totalCalories.setText(Double.toString(meal.getTotalNutrient(Nutrients.CALORIES)));
-	                        totalCarbs.setText(Double.toString(meal.getTotalNutrient(Nutrients.CARBOHYDRATES)));
-	                        totalFat.setText(Double.toString(meal.getTotalNutrient(Nutrients.FAT)));
-	                        totalFiber.setText(Double.toString(meal.getTotalNutrient(Nutrients.FIBER)));
-	                        totalProtein.setText(Double.toString(meal.getTotalNutrient(Nutrients.PROTEIN)));
-	                      }
-
-	                    });
-
-	                    // update totals
-	                    totalCalories.setText(Double.toString(meal.getTotalNutrient(Nutrients.CALORIES)));
-	                    totalCarbs.setText(Double.toString(meal.getTotalNutrient(Nutrients.CARBOHYDRATES)));
-	                    totalFat.setText(Double.toString(meal.getTotalNutrient(Nutrients.FAT)));
-	                    totalFiber.setText(Double.toString(meal.getTotalNutrient(Nutrients.FIBER)));
-	                    totalProtein.setText(Double.toString(meal.getTotalNutrient(Nutrients.PROTEIN)));
 	                  }
 	                });
 	              } else {
@@ -739,47 +783,6 @@ public class Main extends Application {
 		addNutritionTableRow(index + 1, nutritionGrid, food.getName(), food.getNutrientValue(Nutrients.CALORIES.toString()), food.getNutrientValue(Nutrients.CARBOHYDRATES.toString()), food.getNutrientValue(Nutrients.FAT.toString()), food.getNutrientValue(Nutrients.FIBER.toString()), food.getNutrientValue(Nutrients.PROTEIN.toString())); // , false);
 	}
 	
-	/**
-	 * Returns the total number of populated rows in the specified GridPane
-	 * @param grid - grid to evaluate
-	 * @return nRows - the number of rows in grid
-	 */
-	private int getRowCount(GridPane grid) {
-        int nRows = grid.getRowConstraints().size();
-        for (int i = 0; i < grid.getChildren().size(); i++) {
-            Node child = grid.getChildren().get(i);
-            if (child.isManaged()) {
-            	Integer rowIndex1 = grid.getRowIndex(child);
-                int rowIndex2 = (rowIndex1 != null ? rowIndex1 : 0);
-                int rowSpan = getNodeRowSpan(grid, child);
-                int rowEnd = (rowSpan != GridPane.REMAINING ? getNodeRowIndex(grid, child) + rowSpan - 1 : GridPane.REMAINING);
-                nRows = Math.max(nRows, (rowEnd != GridPane.REMAINING? rowEnd : rowIndex1) + 1);
-            }
-        }
-        return nRows;
-    }
-	
-	/**
-	 * Returns the row number of node in grid. If it cannot be found, it returns 0
-	 * @param grid - the grid containing the node
-	 * @param node - the node to find the row index of
-	 * @return int row number of node's location in the table
-	 */
-	private int getNodeRowIndex(GridPane grid, Node node) {
-        Integer rowIndex = grid.getRowIndex(node);
-        return rowIndex != null? rowIndex : 0;
-    }
-	
-	/**
-	 * Returns the number of rows that node spans inside of the grid object. If it cannot be found, it returns 1
-	 * @param grid - the GridPane to evaluate
-	 * @param node - the node to check for the row span
-	 * @return int number of rows that node spans in the GridPane grid
-	 */
-	private int getNodeRowSpan(GridPane grid, Node node) {
-        Integer rowspan = grid.getRowSpan(node);
-        return rowspan != null? rowspan : 1;
-    }
 	/**
 	 * Adds a button for removing a line from a grid
 	 * @param grid - the GridPane to add the button to
