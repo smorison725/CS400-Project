@@ -57,7 +57,7 @@ public class Main extends Application {
 		try {
 			foodList = new FoodData(); //Instantiate the foodList
 			Meal meal = new Meal();
-			// foodList.loadFoodItems("foodItems.txt"); //Set the food item list to the initial path
+			foodList.loadFoodItems("foodItems.txt"); //Set the food item list to the initial path
 			filteredFoods = new ArrayList<FoodItem>();
 			filteredFoods = foodList.getAllFoodItems(); //Set the filtered list to the full list initially
 			//Scene will consist of a VBox. The top node of the box will just be the exit button, and the bottom object will be a split pane
@@ -266,7 +266,7 @@ public class Main extends Application {
 	    	        }
 	    	        else if (valueName != null) {
 		    	        List<String> filters = new ArrayList<String>();
-		    	        if (operatorName.contains("=")) {
+		    	        if (operatorName.contentEquals("=")) {
 		    	        	operatorName = "=="; //Update the operator name to ==
 		    	        }
 		    	        filters.add(filterName.toUpperCase() + " " + operatorName + " " + valueName);
