@@ -2,7 +2,7 @@ Kevin Boening
 	Email: kboening@wisc.edu
 	X-Team: South of the Mason-Dixon Line
 Grant Perry
-	Email: 
+	Email: gperry3@wisc.edu
 	X-Team: South of the Mason-Dixon Line
 Billy Kirk
 	Email:
