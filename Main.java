@@ -1,3 +1,5 @@
+package application;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -57,9 +59,14 @@ public class Main extends Application {
 		try {
 			foodList = new FoodData(); //Instantiate the foodList
 			Meal meal = new Meal();
-			foodList.loadFoodItems("foodItems.txt"); //Set the food item list to the initial path
+			//foodList.loadFoodItems("foodItems.txt"); //Set the food item list to the initial path
+			foodList.loadFoodItems(System.getProperty("user.dir") + "/src/application/foodItems.txt");
 			filteredFoods = new ArrayList<FoodItem>();
+			Label foodCountLbl = new Label();
+			foodCountLbl.getStyleClass().add("label-italics");
 			filteredFoods = foodList.getAllFoodItems(); //Set the filtered list to the full list initially
+			updateListLabel(foodCountLbl, filteredFoods);
+
 			//Scene will consist of a VBox. The top node of the box will just be the exit button, and the bottom object will be a split pane
 			VBox root = new VBox();
 	        SplitPane split = new SplitPane();
@@ -279,7 +286,7 @@ public class Main extends Application {
         			for (FoodItem food : filteredFoods) {
         				addFoodToFilterList(foodListView, food);
         			}
-        			
+        			updateListLabel(foodCountLbl, filteredFoods);
         			// disable button after applying since we clear out fields
         			addFilter.setDisable(true);
 	        	}
@@ -298,6 +305,7 @@ public class Main extends Application {
         				addFoodToFilterList(foodListView, food);
         			}
         			filteredFoods = foodList.getAllFoodItems(); //Reset the filtered list to everything
+        			updateListLabel(foodCountLbl, filteredFoods);
 	        	}
 	        };
 	        
@@ -392,8 +400,10 @@ public class Main extends Application {
 	        
 	        //Add food and save to file HBox
 	        HBox addAndSaveH = new HBox();
-	        Region addAndSaveRegion1 = new HBox();
+	        Region addAndSaveRegion1 = new Region();
+	        Region addAndSaveRegion2 = new Region();
 	        HBox.setHgrow(addAndSaveRegion1, Priority.ALWAYS);
+	        HBox.setHgrow(addAndSaveRegion2, Priority.ALWAYS);
 	        
 	        //Button for user adding an individual food to the list
 	        Button addFood = new Button("\uff0b Add food");
@@ -541,6 +551,20 @@ public class Main extends Application {
 			    					fat.clear();
 			    					fiber.clear();
 			    					protein.clear();
+			    					
+			    					//Update the total foods in list count
+			    					//Also, I've decided we're going to reset the filters when you add a food
+			    					appliedFilters.clear(); //Remove all the filters from the list
+			    	        		filterVBox.getChildren().clear();
+			    	    	        filterVBox.getChildren().addAll(addFilt, filters); //Add all the labels back to the filter section so it appear appropriately
+			    	    	        filterVBox.getChildren().addAll(appliedFilters);
+			    	    	        filterVBox.getChildren().addAll(removeFilt);
+			    	    	        foodListView.getItems().clear(); //Reprint the full list of foods
+			            			for (FoodItem food : foodList.getAllFoodItems()) {
+			            				addFoodToFilterList(foodListView, food);
+			            			}
+			            			filteredFoods = foodList.getAllFoodItems(); //Reset the filtered list to everything
+			    					updateListLabel(foodCountLbl, filteredFoods);
 		                		}
 	                		} 
 	                		catch (NumberFormatException nf) {
@@ -585,7 +609,7 @@ public class Main extends Application {
 	        	}
 	        });
 	        
-	        addAndSaveH.getChildren().addAll(addFood, addAndSaveRegion1, saveList);
+	        addAndSaveH.getChildren().addAll(addFood, addAndSaveRegion1, foodCountLbl, addAndSaveRegion2, saveList);
 	        
 	        foodListVBox.getChildren().addAll(addFoodToMeal, foodListView);
 	        foodListVBox.setAlignment(Pos.CENTER);
@@ -640,28 +664,8 @@ public class Main extends Application {
 	        mealCol2.setHalignment(HPos.RIGHT);
 	        mealGrid.getColumnConstraints().addAll(mealCol1, mealCol2);
 	        
-//	        //Current Meal Grid
-//	        mealGrid.add(new Label("Pancakes"), 0, 0);
-//	        addGridRemoveButton(mealGrid, 1, 0);
-//	        
-//	        mealGrid.add(new Label("Eggs"), 0, 1);
-//	        addGridRemoveButton(mealGrid, 1, 1);
-//	        
-//	        mealGrid.add(new Label("Bacon"), 0, 2);
-//	        addGridRemoveButton(mealGrid, 1, 2);
-//	        
-//	        mealGrid.add(new Label("Milk"), 0, 3);
-//	        addGridRemoveButton(mealGrid, 1, 3);
-	        
 	        mealGrid.setHgap(20);
-	        mealGrid.setVgap(5);
-	        
-	        //add foods from meal to nutrition table
-//		    addNutritionTableRow(nutritionGrid, "Pancakes", 200, 20, 2, 2, 2, false);
-//		    addNutritionTableRow(nutritionGrid, "Eggs", 100, 10, 1, 1, 1, false);
-//		    addNutritionTableRow(nutritionGrid, "Bacon", 300, 30, 3, 3, 3, false);
-//	        addNutritionTableRow(nutritionGrid, "Milk", 50, 5, 0, 0, 0, false);
-	        
+	        mealGrid.setVgap(5);     
 	        
 	        
 	        nutritionGrid.setVgap(5.0);
@@ -870,6 +874,26 @@ public class Main extends Application {
 	      }
 	    }
 	    grid.getChildren().removeAll(nodesToRemove);
+	  }
+	  
+	  /***
+	   * Updates the label below the food list with how many items are in the list. Updated
+	   * whenever a food is added or a new label is applied
+	   * @param countFoods - Label to update
+	   * @param foodListView - the List of food items that has been changed
+	   */
+	  private static void updateListLabel(Label countFoods, List<FoodItem> filteredList) {
+		  	int foodsInList = filteredList.size();
+			String numFoods;
+			switch(foodsInList) {
+				case 0: numFoods = "There are no items in the list";
+					break;
+				case 1: numFoods = "There is 1 item in the list";
+					break;
+				default: numFoods = "There are " + foodsInList + " items in the list";
+					break;
+			}
+			countFoods.setText(numFoods);
 	  }
 
 	public static void main(String[] args) {
