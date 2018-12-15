@@ -207,6 +207,7 @@ public class Main extends Application {
 	        				operator.valueProperty().set(null);
 	        				tf3.clear();
 	        				fail.showAndWait();
+	        				addFilter.setDisable(true);
 	        				return;
 	        			}
 	        			
@@ -220,6 +221,7 @@ public class Main extends Application {
 	        				operator.valueProperty().set(null);
 	        				tf3.clear();
 	        				fail.showAndWait();
+	        				addFilter.setDisable(true);
 	        				return;
 	        			}
 	        			
@@ -240,6 +242,7 @@ public class Main extends Application {
 	        			operator.valueProperty().set(null);
 	        			tf3.clear();
 	        			fail.showAndWait();
+	        			addFilter.setDisable(true);
 	        			return;
 	        		}
 	    	        Label lbl1 = new Label(filterName);
