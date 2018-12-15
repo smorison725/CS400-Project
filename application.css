@@ -42,7 +42,13 @@
 	-fx-font-weight: bold;
 }
 .remove-button {
-       -fx-text-fill: #ee2b29;
+    -fx-text-fill: #ee2b29;
+}
+
+.label-italics {
+	-fx-font-style: italic;
+	-fx-font-size: 12px;
+	-fx-font-family: Arial;
 }
 
 .custom-header {
