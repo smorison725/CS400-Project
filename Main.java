@@ -644,6 +644,7 @@ public class Main extends Application {
 		    	        filterVBox.getChildren().addAll(addFilt, filters); //Add all the labels back to the filter section so it appear appropriately
 		    	        filterVBox.getChildren().addAll(appliedFilters);
 		    	        filterVBox.getChildren().addAll(removeFilt);
+		    	        updateListLabel(foodCountLbl, filteredFoods);
 	        		}
 	        	}
 	        };
