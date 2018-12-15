@@ -5,7 +5,7 @@ Grant Perry
 	Email: gperry3@wisc.edu
 	X-Team: South of the Mason-Dixon Line
 Billy Kirk
-	Email:
+	Email: wckirk@wisc.edu
 	X-Team South of the Mason-Dion Line
 Shannon Morison	
 	Email: smorison@wisc.edu	
