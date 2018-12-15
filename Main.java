@@ -59,7 +59,7 @@ public class Main extends Application {
 		try {
 			foodList = new FoodData(); //Instantiate the foodList
 			Meal meal = new Meal();
-			//foodList.loadFoodItems("foodItems.txt"); //Set the food item list to the initial path
+			foodList.loadFoodItems("foodItems.txt"); //Set the food item list to the initial path
 			foodList.loadFoodItems(System.getProperty("user.dir") + "/src/application/foodItems.txt");
 			filteredFoods = new ArrayList<FoodItem>();
 			Label foodCountLbl = new Label();
@@ -74,6 +74,7 @@ public class Main extends Application {
 	        VBox right = new VBox();
 	        GridPane mealGrid = new GridPane();
 	        ScrollPane mealScrollPane = new ScrollPane(mealGrid);
+	        mealScrollPane.setFitToWidth(true);
 	        GridPane nutritionGrid = new GridPane();
 	        ScrollPane nutritionScrollPane = new ScrollPane(nutritionGrid);
 	        nutritionScrollPane.setFitToWidth(true);
@@ -353,7 +354,7 @@ public class Main extends Application {
 		                    addFoodToCurrentMealGrid(i, mealGrid, addFood, nutritionGrid);
 
 		                    // add remove button for food
-		                    Button removeButton = addGridRemoveButton(mealGrid, 2, i);
+		                    Button removeButton = addGridRemoveButton(mealGrid, 1, i);
 		                    
 		                    // add action for remove button
 		                    removeButton.setOnAction(new EventHandler<ActionEvent>() {
