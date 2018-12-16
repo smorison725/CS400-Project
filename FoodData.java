@@ -41,14 +41,6 @@ public class FoodData implements FoodDataADT<FoodItem> {
   }
   
   /**
-     * Getter method for the ids HashSet
-     * @return ids - private member
-     */
-    public HashSet<String> getIDs() {
-    	return ids;
-    }
-
-  /**
    * Creates a new food item from a given set of data about that food item
    * 
    * @param id- the id of the new food item
@@ -143,6 +135,8 @@ public class FoodData implements FoodDataADT<FoodItem> {
 
         } catch (NumberFormatException ne) {
           continue;
+        } catch (IllegalArgumentException ia) {
+          continue;
         }
       }
     } catch (Exception e) {
@@ -219,6 +213,8 @@ public class FoodData implements FoodDataADT<FoodItem> {
       for (Nutrients n : Nutrients.values()) {
         indexes.get(n.toString()).insert(foodItem.getNutrientValue(n.toString()), foodItem);
       }
+    } else { // throw exception if there is a duplicate
+      throw new IllegalArgumentException();
     }
   }
 
