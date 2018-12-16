@@ -60,8 +60,6 @@ public class Main extends Application {
     try {
       foodList = new FoodData(); // Instantiate the foodList
       Meal meal = new Meal();
-      foodList.loadFoodItems("foodItems.txt"); // Set the food item list to the initial path
-      foodList.loadFoodItems(System.getProperty("user.dir") + "/src/application/foodItems.txt");
       filteredFoods = new ArrayList<FoodItem>();
       Label foodCountLbl = new Label();
       foodCountLbl.getStyleClass().add("label-italics");
@@ -584,7 +582,8 @@ public class Main extends Application {
                                                               // everything
                   updateListLabel(foodCountLbl, filteredFoods);
                 } catch (IllegalArgumentException e) {
-                  // this means we have a duplicate, so don't add it
+                  // If the user-entered food is already in the list, give them a pop up that
+                  // indicates it's a duplicate
                   Alert fail = new Alert(AlertType.ERROR);
                   fail.setTitle("Food Already Exists");
                   fail.setContentText(name + " is already in the list.");
